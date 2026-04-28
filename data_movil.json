@@ -1,0 +1,691 @@
+{
+	"project": "app-movil-cliente",
+	"generatedAt": "2026-04-24",
+	"source": {
+		"authDtos": [
+			"src/main/java/com/workflow/demo/auth/dto/LoginRequest.java",
+			"src/main/java/com/workflow/demo/auth/dto/RefreshTokenRequest.java",
+			"src/main/java/com/workflow/demo/auth/dto/AuthResponse.java"
+		],
+		"processDtos": [
+			"src/main/java/com/workflow/demo/workflowdesign/dto/ProcessInstanceResponse.java",
+			"src/main/java/com/workflow/demo/workflowdesign/dto/ActivityResponseDto.java"
+		],
+		"domain": [
+			"src/main/java/com/workflow/demo/domain/entity/ProcessInstance.java",
+			"src/main/java/com/workflow/demo/domain/embedded/HistoryEvent.java"
+		]
+	},
+	"types": {
+		"ObjectIdHex": {
+			"type": "string",
+			"pattern": "^[a-fA-F0-9]{24}$",
+			"example": "6809a6eb2f9f7d3abbe12f01"
+		},
+		"IsoInstant": {
+			"type": "string",
+			"format": "date-time",
+			"example": "2026-04-24T15:45:31.245Z"
+		},
+		"MapStringAny": {
+			"type": "object",
+			"additionalProperties": true
+		}
+	},
+	"enums": {
+		"ProcessStatus": [
+			"pendiente",
+			"en_proceso",
+			"correccion",
+			"aprobado",
+			"rechazado",
+			"finalizado",
+			"cancelado"
+		],
+		"ActivityStatus": [
+			"pendiente",
+			"en_ejecucion",
+			"completada",
+			"rechazada",
+			"cancelada"
+		],
+		"ResponsableTipo": [
+			"cliente",
+			"usuario",
+			"departamento"
+		],
+		"FieldType": [
+			"text",
+			"textarea",
+			"number",
+			"date",
+			"bool",
+			"select",
+			"file"
+		],
+		"HistoryEventType": [
+			"tramite_creado",
+			"actividad_creada",
+			"actividad_iniciada",
+			"actividad_completada",
+			"actividad_rechazada",
+			"flujo_paralelo_activado",
+			"join_branch_arrived",
+			"join_resuelto",
+			"flujo_iterativo_retorno",
+			"tramite_aprobado",
+			"tramite_rechazado",
+			"tramite_finalizado",
+			"notificacion_generada"
+		]
+	},
+	"schemas": {
+		"LoginRequest": {
+			"type": "object",
+			"required": [
+				"email",
+				"password"
+			],
+			"properties": {
+				"email": {
+					"type": "string",
+					"format": "email",
+					"minLength": 1
+				},
+				"password": {
+					"type": "string",
+					"minLength": 6
+				}
+			}
+		},
+		"RefreshTokenRequest": {
+			"type": "object",
+			"required": [
+				"refreshToken"
+			],
+			"properties": {
+				"refreshToken": {
+					"type": "string",
+					"minLength": 1
+				}
+			}
+		},
+		"AuthResponse": {
+			"type": "object",
+			"required": [
+				"accessToken",
+				"refreshToken",
+				"tokenType",
+				"expiresIn",
+				"user"
+			],
+			"properties": {
+				"accessToken": {
+					"type": "string"
+				},
+				"refreshToken": {
+					"type": "string"
+				},
+				"tokenType": {
+					"type": "string",
+					"example": "Bearer"
+				},
+				"expiresIn": {
+					"type": "integer",
+					"format": "int64",
+					"description": "segundos"
+				},
+				"user": {
+					"$ref": "#/schemas/UserInfo"
+				}
+			}
+		},
+		"UserInfo": {
+			"type": "object",
+			"required": [
+				"id",
+				"nombre",
+				"email",
+				"roleName",
+				"departmentId"
+			],
+			"properties": {
+				"id": {
+					"$ref": "#/types/ObjectIdHex"
+				},
+				"nombre": {
+					"type": "string"
+				},
+				"email": {
+					"type": "string",
+					"format": "email"
+				},
+				"roleName": {
+					"type": "string",
+					"example": "CLIENT"
+				},
+				"departmentId": {
+					"anyOf": [
+						{
+							"$ref": "#/types/ObjectIdHex"
+						},
+						{
+							"type": "null"
+						}
+					]
+				}
+			}
+		},
+		"ProcessInstanceResponse": {
+			"type": "object",
+			"required": [
+				"id",
+				"codigo",
+				"workflowId",
+				"clienteId",
+				"estado",
+				"currentNodeIds",
+				"actividades",
+				"createdAt"
+			],
+			"properties": {
+				"id": {
+					"$ref": "#/types/ObjectIdHex"
+				},
+				"codigo": {
+					"type": "string",
+					"example": "TRM-WF001-12345"
+				},
+				"workflowId": {
+					"$ref": "#/types/ObjectIdHex"
+				},
+				"clienteId": {
+					"$ref": "#/types/ObjectIdHex"
+				},
+				"estado": {
+					"type": "string",
+					"enumRef": "ProcessStatus"
+				},
+				"currentNodeIds": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"actividades": {
+					"type": "array",
+					"items": {
+						"$ref": "#/schemas/ActivityResponse"
+					}
+				},
+				"workflowSnapshot": {
+					"anyOf": [
+						{
+							"$ref": "#/schemas/WorkflowSnapshot"
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"createdAt": {
+					"$ref": "#/types/IsoInstant"
+				},
+				"updatedAt": {
+					"anyOf": [
+						{
+							"$ref": "#/types/IsoInstant"
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"finishedAt": {
+					"anyOf": [
+						{
+							"$ref": "#/types/IsoInstant"
+						},
+						{
+							"type": "null"
+						}
+					]
+				}
+			}
+		},
+		"WorkflowSnapshot": {
+			"type": "object",
+			"required": [
+				"workflowVersion",
+				"nodes",
+				"edges",
+				"lanes",
+				"capturedAt",
+				"capturedBy"
+			],
+			"properties": {
+				"workflowVersion": {
+					"type": "string"
+				},
+				"nodes": {
+					"type": "array",
+					"items": {
+						"$ref": "#/schemas/WorkflowNode"
+					}
+				},
+				"edges": {
+					"type": "array",
+					"items": {
+						"$ref": "#/schemas/WorkflowEdge"
+					}
+				},
+				"lanes": {
+					"type": "array",
+					"items": {
+						"$ref": "#/schemas/Lane"
+					}
+				},
+				"capturedAt": {
+					"$ref": "#/types/IsoInstant"
+				},
+				"capturedBy": {
+					"$ref": "#/types/ObjectIdHex"
+				}
+			}
+		},
+		"WorkflowNode": {
+			"type": "object",
+			"properties": {
+				"id": { "type": "string" },
+				"tipo": { "type": "string" },
+				"nombre": { "type": "string" },
+				"descripcion": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+				"laneId": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+				"departmentId": { "anyOf": [{ "$ref": "#/types/ObjectIdHex" }, { "type": "null" }] },
+				"responsableTipo": { "anyOf": [{ "type": "string", "enumRef": "ResponsableTipo" }, { "type": "null" }] },
+				"responsableUsuarioId": { "anyOf": [{ "$ref": "#/types/ObjectIdHex" }, { "type": "null" }] },
+				"responsableRole": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+				"slaMinutos": { "anyOf": [{ "type": "integer" }, { "type": "null" }] },
+				"permiteAdjuntos": { "type": "boolean" },
+				"form": { "anyOf": [{ "$ref": "#/schemas/NodeForm" }, { "type": "null" }] },
+				"decisionRule": { "anyOf": [{ "$ref": "#/schemas/DecisionRule" }, { "type": "null" }] },
+				"posicionX": { "anyOf": [{ "type": "number" }, { "type": "null" }] },
+				"posicionY": { "anyOf": [{ "type": "number" }, { "type": "null" }] }
+			}
+		},
+		"WorkflowEdge": {
+			"type": "object",
+			"properties": {
+				"fromNodeId": { "type": "string" },
+				"toNodeId": { "type": "string" },
+				"tipo": { "type": "string" },
+				"label": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
+			}
+		},
+		"Lane": {
+			"type": "object",
+			"properties": {
+				"id": { "type": "string" },
+				"nombre": { "type": "string" },
+				"descripcion": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+				"responsable": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+				"color": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+				"departmentId": { "anyOf": [{ "$ref": "#/types/ObjectIdHex" }, { "type": "null" }] },
+				"orden": { "anyOf": [{ "type": "integer" }, { "type": "null" }] }
+			}
+		},
+		"DecisionRule": {
+			"type": "object",
+			"properties": {
+				"field": { "type": "string" },
+				"operator": { "type": "string" },
+				"value": { "type": "string" },
+				"onTrueDestinoNodeId": { "type": "string" },
+				"onFalseDestinoNodeId": { "type": "string" }
+			}
+		},
+		"NodeForm": {
+			"type": "object",
+			"properties": {
+				"titulo": { "type": "string" },
+				"descripcion": { "type": "string" },
+				"campos": {
+					"type": "array",
+					"items": { "$ref": "#/schemas/FormField" }
+				}
+			}
+		},
+		"FormField": {
+			"type": "object",
+			"properties": {
+				"id": { "type": "string" },
+				"label": { "type": "string" },
+				"tipo": { "type": "string", "enumRef": "FieldType" },
+				"required": { "type": "boolean" },
+				"options": {
+					"type": "array",
+					"items": { "type": "string" }
+				},
+				"placeholder": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
+			}
+		},
+		"ActivityResponse": {
+			"type": "object",
+			"required": [
+				"id",
+				"nodeId",
+				"nombre",
+				"estado",
+				"responsableTipo",
+				"respuestaFormulario",
+				"permiteAdjuntos"
+			],
+			"properties": {
+				"id": {
+					"type": "string",
+					"description": "actividadId"
+				},
+				"nodeId": {
+					"type": "string"
+				},
+				"nombre": {
+					"type": "string"
+				},
+				"estado": {
+					"type": "string",
+					"enumRef": "ActivityStatus"
+				},
+				"responsableTipo": {
+					"type": "string",
+					"enumRef": "ResponsableTipo"
+				},
+				"usuarioId": {
+					"anyOf": [
+						{
+							"$ref": "#/types/ObjectIdHex"
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"departmentId": {
+					"anyOf": [
+						{
+							"$ref": "#/types/ObjectIdHex"
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"formulario": {
+					"anyOf": [
+						{
+							"$ref": "#/schemas/NodeFormDto"
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"respuestaFormulario": {
+					"$ref": "#/types/MapStringAny"
+				},
+				"slaMinutos": {
+					"anyOf": [
+						{
+							"type": "integer"
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"permiteAdjuntos": {
+					"type": "boolean"
+				},
+				"fechaInicio": {
+					"anyOf": [
+						{
+							"$ref": "#/types/IsoInstant"
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"fechaFin": {
+					"anyOf": [
+						{
+							"$ref": "#/types/IsoInstant"
+						},
+						{
+							"type": "null"
+						}
+					]
+				}
+			}
+		},
+		"NodeFormDto": {
+			"type": "object",
+			"required": [
+				"titulo",
+				"descripcion",
+				"campos"
+			],
+			"properties": {
+				"titulo": {
+					"type": "string"
+				},
+				"descripcion": {
+					"type": "string"
+				},
+				"campos": {
+					"type": "array",
+					"items": {
+						"$ref": "#/schemas/FormFieldDto"
+					}
+				}
+			}
+		},
+		"FormFieldDto": {
+			"type": "object",
+			"required": [
+				"id",
+				"label",
+				"tipo",
+				"required",
+				"options",
+				"placeholder"
+			],
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"label": {
+					"type": "string"
+				},
+				"tipo": {
+					"type": "string",
+					"enumRef": "FieldType"
+				},
+				"required": {
+					"type": "boolean"
+				},
+				"options": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"placeholder": {
+					"anyOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "null"
+						}
+					]
+				}
+			}
+		},
+		"ProcessInstanceHistoryResponse": {
+			"type": "object",
+			"required": [
+				"processInstanceId",
+				"historial"
+			],
+			"properties": {
+				"processInstanceId": {
+					"$ref": "#/types/ObjectIdHex"
+				},
+				"historial": {
+					"type": "array",
+					"items": {
+						"$ref": "#/schemas/HistoryEvent"
+					}
+				}
+			}
+		},
+		"HistoryEvent": {
+			"type": "object",
+			"properties": {
+				"tipo": {
+					"type": "string",
+					"enumRef": "HistoryEventType"
+				},
+				"nodeId": {
+					"anyOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"nodeIds": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"usuarioId": {
+					"anyOf": [
+						{
+							"$ref": "#/types/ObjectIdHex"
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"userName": {
+					"anyOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"detalle": {
+					"type": "string"
+				},
+				"fecha": {
+					"$ref": "#/types/IsoInstant"
+				},
+				"dataAnterior": {
+					"$ref": "#/types/MapStringAny"
+				},
+				"dataNueva": {
+					"$ref": "#/types/MapStringAny"
+				},
+				"ipAddress": {
+					"anyOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"status": {
+					"type": "string",
+					"example": "SUCCESS"
+				},
+				"errorMessage": {
+					"anyOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "null"
+						}
+					]
+				}
+			}
+		},
+		"JwtUnauthorizedError": {
+			"type": "object",
+			"required": [
+				"status",
+				"message",
+				"error"
+			],
+			"properties": {
+				"status": {
+					"type": "integer",
+					"example": 401
+				},
+				"message": {
+					"type": "string",
+					"example": "No autorizado - Token invalido o ausente"
+				},
+				"error": {
+					"type": "string"
+				}
+			}
+		},
+		"SpringBootDefaultError": {
+			"type": "object",
+			"description": "Formato comun de error de Spring Boot cuando no hay handler global declarado.",
+			"properties": {
+				"timestamp": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer"
+				},
+				"error": {
+					"type": "string"
+				},
+				"message": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"coverageNotes": {
+		"whatClientGetsToday": [
+			"Listado de tramites devuelve estructura ProcessInstanceResponse compacta con actividades enriquecidas y formulario del nodo.",
+			"Detalle de tramite devuelve ProcessInstanceResponse con workflowSnapshot completo para dibujar workflow, nodos, lanes y edges en el movil.",
+			"El historial del tramite se obtiene por endpoint separado /api/process-instances/{id}/history."
+		],
+		"domainFieldsNotExposedInProcessInstanceResponse": [
+			"datosResumen",
+			"workflowSnapshot",
+			"actividades.adjuntos",
+			"actividades.observacion",
+			"actividades.iteracion"
+		],
+		"impact": "Si app movil requiere esos campos, se necesita ampliar ProcessInstanceResponse/ActivityResponseDto en backend."
+	}
+}

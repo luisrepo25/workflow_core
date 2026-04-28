@@ -1,0 +1,799 @@
+{
+  "meta": {
+    "name": "Frontend Data Contract",
+    "version": "2.3.0",
+    "source": "Backend Java classes (domain + DTO + controllers)",
+    "generatedAt": "2026-04-25",
+    "notes": [
+      "All ObjectId values are transported as 24-char hex string.",
+      "Date-time values use ISO-8601 UTC string.",
+      "This contract is aligned to current backend code.",
+      "For FormField tipo=file, frontend sends multipart/form-data in process_complete_activity, including files and field mapping in same request."
+    ]
+  },
+  "scalarTypes": {
+    "ObjectId": {
+      "transportType": "string",
+      "pattern": "^[a-fA-F0-9]{24}$",
+      "example": "65f1a2b3c4d5e6f7890a1b2c"
+    },
+    "Instant": {
+      "transportType": "string",
+      "format": "date-time",
+      "example": "2026-04-20T12:30:00Z"
+    },
+    "Map<string,object>": {
+      "transportType": "object"
+    }
+  },
+  "enums": {
+    "ActivityStatus": ["pendiente", "en_ejecucion", "completada", "rechazada", "cancelada"],
+    "EdgeType": ["secuencial", "iterativo", "paralelo"],
+    "FieldType": ["text", "textarea", "number", "date", "bool", "select", "file"],
+    "HistoryEventType": [
+      "tramite_creado",
+      "actividad_creada",
+      "actividad_iniciada",
+      "actividad_completada",
+      "actividad_rechazada",
+      "flujo_paralelo_activado",
+      "join_branch_arrived",
+      "join_resuelto",
+      "flujo_iterativo_retorno",
+      "tramite_aprobado",
+      "tramite_rechazado",
+      "tramite_finalizado",
+      "notificacion_generada"
+    ],
+    "NodeType": ["inicio", "actividad", "decision", "paralelo_inicio", "paralelo_fin", "fin"],
+    "NotificationStatus": ["pendiente_envio", "enviada", "fallida", "leida"],
+    "NotificationType": ["push", "in_app", "push_in_app"],
+    "ProcessStatus": ["pendiente", "en_proceso", "correccion", "aprobado", "rechazado", "finalizado", "cancelado"],
+    "PushPlatform": ["android", "ios", "web"],
+    "ResponsableRole": ["Cliente", "Funcionario", "Disenador", "Administrador"],
+    "ResponsableTipo": ["cliente", "usuario", "departamento"],
+    "WorkflowStatus": ["borrador", "activo", "inactivo"],
+    "RoleEnum": ["DESIGNER", "FUNCIONARIO", "CLIENT", "ADMIN"],
+    "RoleAuthority": ["ROLE_DESIGNER", "ROLE_FUNCIONARIO", "ROLE_CLIENT", "ROLE_ADMIN"],
+    "CollaboratorRole": ["DESIGNER", "VIEWER"],
+    "CollaboratorStatus": ["PENDING", "ACCEPTED", "REJECTED", "REMOVED"],
+    "ConditionOperator": ["EQUALS", "NOT_EQUALS", "GREATER_THAN", "GREATER_EQUAL_THAN", "LESS_THAN", "LESS_EQUAL_THAN", "CONTAINS", "STARTS_WITH", "ENDS_WITH"]
+
+  },
+  "models": {
+    "embedded": {
+      "ActivityAttachment": {
+        "fields": {
+          "fileId": "ObjectId",
+          "nombre": "string",
+          "url": "string"
+        }
+      },
+      "FormFileValue": {
+        "description": "Valor recomendado para campos de formulario tipo=file dentro de respuestaFormulario.",
+        "fields": {
+          "fileId": "ObjectId",
+          "url": "string",
+          "publicId": "string",
+          "nombre": "string",
+          "mimeType": "string",
+          "sizeBytes": "number",
+          "provider": "string (cloudinary)",
+          "uploadedAt": "Instant"
+        }
+      },
+      "DecisionRule": {
+        "fields": {
+          "field": "string",
+          "operator": "ConditionOperator",
+          "value": "string",
+          "onTrueDestinoNodeId": "string",
+          "onFalseDestinoNodeId": "string"
+        }
+      },
+      "FormField": {
+        "fields": {
+          "id": "string",
+          "label": "string",
+          "tipo": "FieldType",
+          "required": "boolean",
+          "options": "string[]",
+          "placeholder": "string"
+        }
+      },
+      "HistoryEvent": {
+        "fields": {
+          "tipo": "HistoryEventType",
+          "nodeId": "string",
+          "nodeIds": "string[]",
+          "usuarioId": "ObjectId",
+          "userName": "string",
+          "detalle": "string",
+          "fecha": "Instant",
+          "dataAnterior": "Map<string,object>",
+          "dataNueva": "Map<string,object>",
+          "ipAddress": "string",
+          "status": "string",
+          "errorMessage": "string"
+        }
+      },
+      "Lane": {
+        "fields": {
+          "id": "string",
+          "nombre": "string",
+          "descripcion": "string",
+          "responsable": "string",
+          "color": "string",
+          "departmentId": "ObjectId",
+          "orden": "number"
+        }
+      },
+      "NodeForm": {
+        "fields": {
+          "titulo": "string",
+          "descripcion": "string",
+          "campos": "FormField[]"
+        }
+      },
+      "NotificationReference": {
+        "fields": {
+          "processInstanceId": "ObjectId",
+          "workflowId": "ObjectId",
+          "nodeId": "string"
+        }
+      },
+      "ProcessActivity": {
+        "fields": {
+          "actividadId": "string",
+          "nodeId": "string",
+          "nombre": "string",
+          "responsableTipo": "ResponsableTipo",
+          "usuarioId": "ObjectId",
+          "departmentId": "ObjectId",
+          "estado": "ActivityStatus",
+          "fechaInicio": "Instant",
+          "fechaFin": "Instant",
+          "respuestaFormulario": "Map<string,object>",
+          "adjuntos": "ActivityAttachment[]",
+          "observacion": "string",
+          "iteracion": "number"
+        }
+      },
+      "PushMeta": {
+        "fields": {
+          "tokens": "string[]",
+          "enviado": "boolean",
+          "fechaEnvio": "Instant",
+          "error": "string"
+        }
+      },
+      "PushToken": {
+        "fields": {
+          "token": "string",
+          "platform": "PushPlatform",
+          "lastUsedAt": "Instant",
+          "activo": "boolean"
+        }
+      },
+      "SummaryData": {
+        "fields": {
+          "titulo": "string",
+          "descripcionCliente": "string",
+          "ultimaActualizacionVisible": "Instant"
+        }
+      },
+      "WorkflowEdge": {
+        "fields": {
+          "fromNodeId": "string",
+          "toNodeId": "string",
+          "tipo": "EdgeType",
+          "label": "string"
+        }
+      },
+      "WorkflowNode": {
+        "fields": {
+          "id": "string",
+          "tipo": "NodeType",
+          "nombre": "string",
+          "descripcion": "string",
+          "laneId": "string",
+          "departmentId": "ObjectId",
+          "responsableTipo": "ResponsableTipo",
+          "responsableUsuarioId": "ObjectId",
+          "responsableRole": "ResponsableRole",
+          "slaMinutos": "number",
+          "permiteAdjuntos": "boolean",
+          "form": "NodeForm",
+          "decisionRule": "DecisionRule",
+          "posicionX": "number",
+          "posicionY": "number"
+        }
+      },
+      "WorkflowSnapshot": {
+        "fields": {
+          "workflowVersion": "string",
+          "nodes": "WorkflowNode[]",
+          "edges": "WorkflowEdge[]",
+          "lanes": "Lane[]",
+          "capturedAt": "Instant",
+          "capturedBy": "ObjectId"
+        }
+      }
+    },
+    "entities": {
+      "Department": {
+        "fields": {
+          "id": "ObjectId",
+          "nombre": "string",
+          "descripcion": "string",
+          "activo": "boolean",
+          "createdAt": "Instant",
+          "updatedAt": "Instant"
+        }
+      },
+      "Notification": {
+        "fields": {
+          "id": "ObjectId",
+          "userId": "ObjectId",
+          "tipo": "NotificationType",
+          "titulo": "string",
+          "mensaje": "string",
+          "estado": "NotificationStatus",
+          "referencia": "NotificationReference",
+          "pushMeta": "PushMeta",
+          "leida": "boolean",
+          "createdAt": "Instant",
+          "updatedAt": "Instant",
+          "leIdoAt": "Instant",
+          "enviadoAt": "Instant",
+          "canal": "string",
+          "motivoFalla": "string",
+          "intentosReenvio": "number",
+          "ipAddress": "string",
+          "userAgent": "string"
+        }
+      },
+      "ProcessInstance": {
+        "fields": {
+          "id": "ObjectId",
+          "codigo": "string",
+          "workflowId": "ObjectId",
+          "clienteId": "ObjectId",
+          "estado": "ProcessStatus",
+          "currentNodeIds": "string[]",
+          "datosResumen": "SummaryData",
+          "actividades": "ProcessActivity[]",
+          "historial": "HistoryEvent[]",
+          "workflowSnapshot": "WorkflowSnapshot",
+          "createdAt": "Instant",
+          "updatedAt": "Instant",
+          "finishedAt": "Instant"
+        }
+      },
+      "Role": {
+        "fields": {
+          "id": "ObjectId",
+          "nombre": "string",
+          "permisos": "string[]",
+          "activo": "boolean",
+          "createdAt": "Instant",
+          "updatedAt": "Instant"
+        }
+      },
+      "StoredFile": {
+        "fields": {
+          "id": "ObjectId",
+          "nombreOriginal": "string",
+          "storagePath": "string",
+          "url": "string",
+          "mimeType": "string",
+          "sizeBytes": "number",
+          "subidoPor": "ObjectId",
+          "processInstanceId": "ObjectId",
+          "nodeId": "string",
+          "createdAt": "Instant"
+        }
+      },
+      "User": {
+        "fields": {
+          "id": "ObjectId",
+          "nombre": "string",
+          "email": "string",
+          "passwordHash": "string",
+          "roleId": "ObjectId",
+          "departmentId": "ObjectId",
+          "activo": "boolean",
+          "telefono": "string",
+          "pushTokens": "PushToken[]",
+          "createdAt": "Instant",
+          "updatedAt": "Instant"
+        }
+      },
+      "Workflow": {
+        "fields": {
+          "id": "ObjectId",
+          "codigo": "string",
+          "nombre": "string",
+          "descripcion": "string",
+          "estado": "WorkflowStatus",
+          "enEdicionPor": "ObjectId",
+          "lanes": "Lane[]",
+          "nodes": "WorkflowNode[]",
+          "edges": "WorkflowEdge[]",
+          "createdBy": "ObjectId",
+          "createdAt": "Instant",
+          "updatedAt": "Instant"
+        }
+      },
+      "WorkflowCollaborator": {
+        "fields": {
+          "id": "ObjectId",
+          "workflowId": "ObjectId",
+          "userId": "ObjectId",
+          "role": "CollaboratorRole",
+          "invitedBy": "ObjectId",
+          "status": "CollaboratorStatus",
+          "invitedAt": "Instant",
+          "updatedAt": "Instant",
+          "acceptedAt": "Instant"
+        }
+      }
+    }
+  },
+  "dto": {
+    "auth": {
+      "LoginRequest": {
+        "fields": {
+          "email": "string (required, valid email format)",
+          "password": "string (required, min 6 chars)",
+          "fcm_token": "string (optional, Firebase Cloud Messaging device token for push notifications)"
+        },
+        "notes": [
+          "fcm_token is optional. If provided, it will be stored in User.pushTokens[] for later push notification delivery.",
+          "If fcm_token is provided, it will be associated with PushPlatform.android by default.",
+          "Multiple fcm_tokens can be registered for the same user from different devices."
+        ]
+      },
+      "RegisterRequest": {
+        "fields": {
+          "nombre": "string",
+          "email": "string",
+          "password": "string",
+          "telefono": "string",
+          "departmentId": "ObjectId",
+          "role": "string (DisplayName from RoleEnum)"
+        }
+      },
+      "RefreshTokenRequest": {
+        "fields": {
+          "refreshToken": "string"
+        }
+      },
+      "ChangePasswordRequest": {
+        "fields": {
+          "currentPassword": "string",
+          "newPassword": "string"
+        }
+      },
+      "AuthResponse": {
+        "fields": {
+          "accessToken": "string",
+          "refreshToken": "string",
+          "tokenType": "string",
+          "expiresIn": "number",
+          "user": "AuthResponse.UserInfo"
+        },
+        "nested": {
+          "UserInfo": {
+            "fields": {
+              "id": "ObjectId",
+              "nombre": "string",
+              "email": "string",
+              "roleName": "string",
+              "departmentId": "ObjectId"
+            }
+          }
+        }
+      },
+      "UserListItemResponse": {
+        "fields": {
+          "id": "ObjectId",
+          "nombre": "string",
+          "email": "string",
+          "departmentId": "ObjectId"
+        }
+      }
+    },
+    "workflowdesign": {
+      "CreateDepartmentRequest": {
+        "fields": {
+          "nombre": "string",
+          "descripcion": "string",
+          "activo": "boolean"
+        }
+      },
+      "DepartmentResponse": {
+        "fields": {
+          "id": "ObjectId",
+          "nombre": "string",
+          "descripcion": "string",
+          "activo": "boolean",
+          "createdAt": "Instant",
+          "updatedAt": "Instant"
+        }
+      },
+      "CreateWorkflowRequest": {
+        "fields": {
+          "codigo": "string",
+          "nombre": "string",
+          "descripcion": "string",
+          "estado": "WorkflowStatus"
+        },
+        "defaults": {
+          "estado": "borrador"
+        }
+      },
+      "UpdateWorkflowRequest": {
+        "fields": {
+          "nombre": "string",
+          "descripcion": "string",
+          "estado": "WorkflowStatus"
+        }
+      },
+      "SaveWorkflowDesignRequest": {
+        "fields": {
+          "lanes": "Lane[]",
+          "nodes": "WorkflowNode[]",
+          "edges": "WorkflowEdge[]"
+        }
+      },
+      "LockWorkflowRequest": {
+        "fields": {
+          "userId": "ObjectId"
+        }
+      },
+      "WorkflowLockResponse": {
+        "fields": {
+          "locked": "boolean",
+          "workflowId": "ObjectId",
+          "enEdicionPor": "ObjectId"
+        }
+      },
+      "WorkflowValidationResponse": {
+        "fields": {
+          "valid": "boolean",
+          "errors": "string[]",
+          "warnings": "string[]"
+        }
+      },
+      "WorkflowListItemResponse": {
+        "fields": {
+          "id": "ObjectId",
+          "codigo": "string",
+          "nombre": "string",
+          "descripcion": "string",
+          "estado": "WorkflowStatus",
+          "createdAt": "Instant",
+          "updatedAt": "Instant",
+          "enEdicionPor": "ObjectId"
+        }
+      },
+      "WorkflowDetailResponse": {
+        "fields": {
+          "id": "ObjectId",
+          "codigo": "string",
+          "nombre": "string",
+          "descripcion": "string",
+          "estado": "WorkflowStatus",
+          "createdBy": "ObjectId",
+          "enEdicionPor": "ObjectId",
+          "createdAt": "Instant",
+          "updatedAt": "Instant",
+          "lanes": "Lane[]",
+          "nodes": "WorkflowNode[]",
+          "edges": "WorkflowEdge[]"
+        }
+      },
+      "DecisionContextResponse": {
+        "fields": {
+          "decisionNodeId": "string",
+          "incomingNodeIds": "string[]",
+          "fields": "DecisionContextResponse.DecisionContextField[]",
+          "operatorsByType": "Map<string,string[]>"
+        },
+        "nested": {
+          "DecisionContextField": {
+            "fields": {
+              "fieldId": "string",
+              "label": "string",
+              "type": "string",
+              "sourceNodeId": "string"
+            }
+          }
+        }
+      },
+      "DecisionRulesPatchRequest": {
+        "fields": {
+          "mode": "string (binary|standard)",
+          "decisionRule": "DecisionRule"
+        }
+      },
+      "DecisionRulesPatchResponse": {
+        "fields": {
+          "nodeId": "string",
+          "updatedAt": "Instant",
+          "decisionRule": "DecisionRule"
+        }
+      },
+      "DecisionRulesValidateRequest": {
+        "fields": {
+          "mode": "string (binary|standard)",
+          "decisionRule": "DecisionRule"
+        }
+      },
+      "DecisionRulesValidationResult": {
+        "fields": {
+          "valid": "boolean",
+          "errors": "string[]",
+          "warnings": "string[]"
+        }
+      },
+      "DecisionRulesSimulateRequest": {
+        "fields": {
+          "mode": "string (binary|standard)",
+          "input": "Map<string,object>",
+          "decisionRule": "DecisionRule"
+        }
+      },
+      "DecisionRulesSimulateResponse": {
+        "fields": {
+          "matched": "boolean",
+          "matchedRule": "string",
+          "destinoNodeId": "string",
+          "trace": "string[]"
+        }
+      },
+      "InviteCollaboratorRequest": {
+        "fields": {
+          "email": "string",
+          "role": "CollaboratorRole"
+        }
+      },
+      "CollaboratorResponse": {
+        "fields": {
+          "id": "ObjectId",
+          "workflowId": "ObjectId",
+          "userId": "ObjectId",
+          "role": "CollaboratorRole",
+          "status": "CollaboratorStatus",
+          "invitedBy": "ObjectId",
+          "invitedAt": "Instant",
+          "acceptedAt": "Instant"
+        }
+      },
+      "CreateProcessInstanceRequest": {
+        "fields": {
+          "workflowId": "string",
+          "clienteId": "string",
+          "datosIniciales": "Map<string,object>"
+        }
+      },
+      "CompleteActivityRequest": {
+        "description": "Request logico para completar actividad. Cuando hay campos file, se transporta en multipart/form-data junto con archivos y mapeo por fieldId.",
+        "fields": {
+          "respuestaFormulario": "Map<string,object>",
+          "comentarios": "string"
+        },
+        "multipartMode": {
+          "contentType": "multipart/form-data",
+          "parts": {
+            "payload": "string (JSON de CompleteActivityRequest)",
+            "files": "binary[]",
+            "fileFieldIds": "string[] (mismo orden que files[], cada item es FormField.id tipo=file)"
+          },
+          "example": {
+            "payload": {
+              "respuestaFormulario": {
+                "aprobado": true,
+                "comentario": "Cumple requisitos",
+                "comprobantePago": null,
+                "fotoLocal": null
+              },
+              "comentarios": "Revision completada"
+            },
+            "fileFieldIds": ["comprobantePago", "fotoLocal"]
+          }
+        },
+        "fieldValueConventions": {
+          "fileSingle": "FormFileValue",
+          "fileMultiple": "FormFileValue[]",
+          "example": {
+            "comprobantePago": {
+              "fileId": "65f1a2b3c4d5e6f7890a9abc",
+              "url": "https://res.cloudinary.com/mi-cloud/raw/upload/v1710000000/workflow/proc_6601/act_123/comprobante.pdf",
+              "publicId": "workflow/proc_6601/act_123/comprobante",
+              "nombre": "comprobante.pdf",
+              "mimeType": "application/pdf",
+              "sizeBytes": 384221,
+              "provider": "cloudinary",
+              "uploadedAt": "2026-04-25T13:10:00Z"
+            }
+          }
+        }
+      },
+      "ActivityResponseDto": {
+        "description": "Actividad dentro de un trámite. El campo 'formulario' contiene la definición de campos que el funcionario debe rellenar antes de completar el nodo.",
+        "fields": {
+          "id": "string (UUID de la actividad)",
+          "nodeId": "string (ID del nodo del workflow)",
+          "nombre": "string (nombre del nodo, ej: 'Revisión de documentos')",
+          "estado": "ActivityStatus",
+          "responsableTipo": "ResponsableTipo",
+          "usuarioId": "ObjectId (solo si responsableTipo=usuario)",
+          "departmentId": "ObjectId (solo si responsableTipo=departamento)",
+          "formulario": "ActivityResponseDto.NodeFormDto | null",
+          "respuestaFormulario": "Map<string,object> (vacío hasta que se complete)",
+          "slaMinutos": "number | null",
+          "permiteAdjuntos": "boolean",
+          "iteracion": "number (iteración del nodo, empieza en 1)",
+          "fechaInicio": "Instant",
+          "fechaFin": "Instant"
+        },
+        "nested": {
+          "NodeFormDto": {
+            "fields": {
+              "titulo": "string",
+              "descripcion": "string",
+              "campos": "ActivityResponseDto.FormFieldDto[]"
+            }
+          },
+          "FormFieldDto": {
+            "fields": {
+              "id": "string",
+              "label": "string",
+              "tipo": "FieldType (text|textarea|number|date|bool|select|file)",
+              "required": "boolean",
+              "options": "string[] (solo para tipo=select)",
+              "placeholder": "string"
+            }
+          }
+        }
+      },
+      "ProcessInstanceResponse": {
+        "description": "workflowSnapshot solo se incluye en GET /api/process-instances/{id} (fromDetailed). En listados como /activities/pending, viene null para reducir payload.",
+        "fields": {
+          "id": "string",
+          "codigo": "string",
+          "workflowId": "string",
+          "clienteId": "string",
+          "estado": "ProcessStatus",
+          "currentNodeIds": "string[]",
+          "actividades": "ActivityResponseDto[]",
+          "workflowSnapshot": "WorkflowSnapshot | null",
+          "createdAt": "Instant",
+          "updatedAt": "Instant",
+          "finishedAt": "Instant"
+        }
+      },
+      "WorkflowChangeMessage": {
+        "fields": {
+          "action": "string",
+          "workflowId": "ObjectId",
+          "userId": "ObjectId",
+          "userName": "string",
+          "data": "object",
+          "timestamp": "number",
+          "status": "string",
+          "message": "string",
+          "messageId": "string",
+          "nodeId": "string",
+          "edgeId": "string",
+          "laneId": "string",
+          "iteracion": "number"
+        }
+      },
+      "WorkflowEditingState": {
+        "fields": {
+          "workflowId": "ObjectId",
+          "editedBy": "ObjectId",
+          "editedByName": "string",
+          "lockedAt": "number",
+          "lastModified": "number",
+          "activeEditors": "WorkflowEditingState.ActiveEditor[]",
+          "lanes": "object",
+          "nodes": "object",
+          "edges": "object",
+          "pendingChanges": "WorkflowChangeMessage[]"
+        },
+        "nested": {
+          "ActiveEditor": {
+            "fields": {
+              "userId": "ObjectId",
+              "userName": "string",
+              "email": "string",
+              "connectedAt": "number",
+              "cursorPosition": "string",
+              "selectedElement": "string"
+            }
+          }
+        }
+      }
+    },
+    "dashboard": {
+      "DashboardMetricsResponse": {
+        "fields": {
+          "totalTramites": "number",
+          "tramitesActivos": "number",
+          "tramitesCompletados": "number",
+          "tiempoMedioResolucionMinutos": "number",
+          "actividadesPendientesTotales": "number",
+          "tasaRechazoPorcentual": "number",
+          "tramitesPorWorkflowNombre": "Map<string,number>",
+          "cuellosDeBotella": "DashboardMetricsResponse.BottleneckDto[]",
+          "tramitesPorEstado": "Map<string,number>",
+          "tramitesPorDepartamento": "Map<string,number>"
+        },
+        "nested": {
+          "BottleneckDto": {
+            "fields": {
+              "nodeId": "string",
+              "nodeName": "string",
+              "averageTimeMinutos": "number",
+              "pendingCount": "number"
+            }
+          }
+        }
+      }
+    }
+  },
+  "endpoints": {
+    "processInstances": {
+      "process_list_all": {
+        "method": "GET",
+        "path": "/api/process-instances/all",
+        "authRequired": true,
+        "roles": ["ROLE_FUNCIONARIO", "ROLE_DESIGNER", "ROLE_ADMIN"],
+        "description": "Lista todos los tramites con la respuesta completa de ProcessInstanceResponse[]",
+        "responseType": "ProcessInstanceResponse[]"
+      },
+      "process_complete_activity": {
+        "method": "POST",
+        "path": "/api/process-instances/activities/{actividadId}/complete",
+        "authRequired": true,
+        "requestBodyType": "multipart/form-data",
+        "requestParts": {
+          "payload": "string (JSON de CompleteActivityRequest)",
+          "files": "binary[]",
+          "fileFieldIds": "string[] (mismo orden que files[])"
+        },
+        "description": "Completa actividad en un solo request. Incluye payload del formulario y archivo(s) con su fieldId correspondiente.",
+        "responseType": "ProcessInstanceResponse"
+      }
+    },
+    "dashboard": {
+      "dashboard_metrics": {
+        "method": "GET",
+        "path": "/api/dashboard/metrics",
+        "authRequired": true,
+        "roles": ["ROLE_ADMIN", "ROLE_FUNCIONARIO", "ROLE_DESIGNER"],
+        "description": "Obtiene metricas agregadas de todos los tramites para renderizar dashboard.",
+        "responseType": "DashboardMetricsResponse"
+      }
+    }
+  },
+  "transportRules": [
+    "Do not send MongoDB ObjectId objects; always send string hex values.",
+    "Use fromNodeId/toNodeId in WorkflowEdge.",
+    "NodeType actividad requires responsableTipo.",
+    "Node laneId must exist in lanes[].id.",
+    "Node departmentId must match lane.departmentId.",
+    "Decision rules use a structured model with field, operator (ConditionOperator), and value.",
+    "Decision rules in mode binary must have exactly 2 rules.",
+    "Decision rules in mode standard require an explicit fallback rule (field vacio).",
+    "File inputs are single-step in process_complete_activity using multipart/form-data.",
+    "Each uploaded file must map to a file form field via fileFieldIds[] using same positional order as files[].",
+    "For FieldType=file, do not embed raw binary/base64 inside payload.respuestaFormulario.",
+    "WebSocket messages use WorkflowChangeMessage schema.",
+    "When processing remote node_updated, frontend should redraw the canvas."
+  ]
+}

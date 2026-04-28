@@ -1,0 +1,1284 @@
+{
+  "apiVersion": "2.4.0",
+  "baseUrl": "http://localhost:8080",
+  "sourceOfTruth": {
+    "controllers": [
+      "auth/controller/AuthController.java",
+      "auth/controller/NotificationController.java",
+      "workflowdesign/controller/DepartmentController.java",
+      "workflowdesign/controller/WorkflowController.java",
+      "workflowdesign/controller/WorkflowCollaboratorController.java",
+      "workflowdesign/controller/WorkflowInvitationController.java",
+      "workflowdesign/controller/ProcessInstanceController.java",
+      "auth/controller/UserController.java",
+      "dashboard/controller/DashboardController.java"
+    ],
+    "generatedAt": "2026-04-26"
+  },
+  "totalEndpoints": 45,
+  "responseConventions": {
+    "ObjectId": "string (24 hex)",
+    "Instant": "string (ISO-8601 UTC)",
+    "Map": "JSON object"
+  },
+  "endpoints": {
+    "authentication": [
+      {
+        "id": "auth_login",
+        "method": "POST",
+        "path": "/api/auth/login",
+        "authRequired": false,
+        "requestBodyType": "LoginRequest",
+        "requestBodyExample": {
+          "email": "ana@example.com",
+          "password": "SecurePass123",
+          "fcm_token": "eXXXXXXXXXXXXXXXXXXXX_android_device_token"
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "AuthResponse",
+          "example": {
+            "accessToken": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI2NWYxYTJiM2M0ZDVlNmY3ODkwYTFiMmMiLCJhdXRob3JpdGllcyI6WyJST0xFX0RFU0lHTkVSIl19.signature",
+            "refreshToken": "eyJhbGciOiJIUzUxMiJ9.eyJ0eXAiOiJyZWZyZXNoIn0.signature",
+            "tokenType": "Bearer",
+            "expiresIn": 86400,
+            "user": {
+              "id": "65f1a2b3c4d5e6f7890a1b2c",
+              "nombre": "Ana Perez",
+              "email": "ana@example.com",
+              "roleName": "Disenador",
+              "departmentId": "65f1a2b3c4d5e6f7890a1b2d"
+            }
+          }
+        }
+      },
+      {
+        "id": "auth_register",
+        "method": "POST",
+        "path": "/api/auth/register",
+        "authRequired": false,
+        "requestBodyType": "RegisterRequest",
+        "requestBodyExample": {
+          "nombre": "Carlos Lopez",
+          "email": "carlos@example.com",
+          "password": "SecurePass123",
+          "telefono": "+593999000111",
+          "departmentId": "65f1a2b3c4d5e6f7890a1b2d",
+          "role": "Disenador"
+        },
+        "successResponse": {
+          "status": 201,
+          "dataType": "AuthResponse",
+          "example": {
+            "accessToken": "eyJhbGciOiJIUzUxMiJ9...",
+            "refreshToken": "eyJhbGciOiJIUzUxMiJ9...",
+            "tokenType": "Bearer",
+            "expiresIn": 86400,
+            "user": {
+              "id": "65f1a2b3c4d5e6f7890a1b30",
+              "nombre": "Carlos Lopez",
+              "email": "carlos@example.com",
+              "roleName": "Disenador",
+              "departmentId": "65f1a2b3c4d5e6f7890a1b2d"
+            }
+          }
+        }
+      },
+      {
+        "id": "auth_refresh",
+        "method": "POST",
+        "path": "/api/auth/refresh",
+        "authRequired": false,
+        "requestBodyType": "RefreshTokenRequest",
+        "requestBodyExample": {
+          "refreshToken": "eyJhbGciOiJIUzUxMiJ9..."
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "AuthResponse",
+          "example": {
+            "accessToken": "eyJhbGciOiJIUzUxMiJ9.new_access_token",
+            "refreshToken": "eyJhbGciOiJIUzUxMiJ9.new_refresh_token",
+            "tokenType": "Bearer",
+            "expiresIn": 86400,
+            "user": {
+              "id": "65f1a2b3c4d5e6f7890a1b2c",
+              "nombre": "Ana Perez",
+              "email": "ana@example.com",
+              "roleName": "Disenador",
+              "departmentId": "65f1a2b3c4d5e6f7890a1b2d"
+            }
+          }
+        }
+      },
+      {
+        "id": "auth_change_password",
+        "method": "POST",
+        "path": "/api/auth/change-password",
+        "authRequired": true,
+        "requestBodyType": "ChangePasswordRequest",
+        "requestBodyExample": {
+          "currentPassword": "OldPass123",
+          "newPassword": "NewSecurePass456"
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "string",
+          "example": "Contrasena cambiada exitosamente"
+        }
+      },
+      {
+        "id": "auth_logout",
+        "method": "POST",
+        "path": "/api/auth/logout",
+        "authRequired": true,
+        "requestBodyType": "none",
+        "successResponse": {
+          "status": 200,
+          "dataType": "string",
+          "example": "Sesion cerrada exitosamente"
+        }
+      }
+    ],
+    "dashboard": [
+      {
+        "id": "dashboard_metrics",
+        "method": "GET",
+        "path": "/api/dashboard/metrics",
+        "authRequired": true,
+        "roles": ["ROLE_ADMIN", "ROLE_FUNCIONARIO", "ROLE_DESIGNER"],
+        "successResponse": {
+          "status": 200,
+          "dataType": "DashboardMetricsResponse",
+          "example": {
+            "totalTramites": 150,
+            "tramitesActivos": 45,
+            "tramitesCompletados": 100,
+            "tiempoMedioResolucionMinutos": 120.5,
+            "actividadesPendientesTotales": 23,
+            "tasaRechazoPorcentual": 4.5,
+            "tramitesPorWorkflowNombre": {
+              "Tramite de permisos": 90,
+              "Licencias": 60
+            },
+            "cuellosDeBotella": [
+              {
+                "nodeId": "n_revision",
+                "nodeName": "Revision Financiera",
+                "averageTimeMinutos": 65,
+                "pendingCount": 12
+              }
+            ],
+            "tramitesPorEstado": {
+              "finalizado": 100,
+              "en_proceso": 40,
+              "pendiente": 5
+            },
+            "tramitesPorDepartamento": {
+              "65f1a2b3c4d5e6f7890a2a01": 80
+            }
+          }
+        }
+      }
+    ],
+    "notifications": [
+      {
+        "id": "notifications_list",
+        "method": "GET",
+        "path": "/api/notifications",
+        "authRequired": true,
+        "roles": ["ROLE_CLIENT", "ROLE_FUNCIONARIO", "ROLE_DESIGNER", "ROLE_ADMIN"],
+        "successResponse": {
+          "status": 200,
+          "dataType": "Notification[]",
+          "example": [
+            {
+              "id": "65f1a2b3c4d5e6f7890a1c10",
+              "userId": "65f1a2b3c4d5e6f7890a1b2c",
+              "tipo": "in_app",
+              "titulo": "Nueva actividad asignada",
+              "mensaje": "Tienes una actividad pendiente en el tramite TRM-0001",
+              "estado": "pendiente_envio",
+              "referencia": {
+                "processInstanceId": "65f1a2b3c4d5e6f7890a1d01",
+                "workflowId": "65f1a2b3c4d5e6f7890a1e01",
+                "nodeId": "node_revision"
+              },
+              "pushMeta": {
+                "tokens": ["fcm_token_1"],
+                "enviado": false,
+                "fechaEnvio": null,
+                "error": null
+              },
+              "leida": false,
+              "createdAt": "2026-04-20T10:30:00Z",
+              "updatedAt": "2026-04-20T10:30:00Z",
+              "leIdoAt": null,
+              "enviadoAt": null,
+              "canal": "in_app",
+              "motivoFalla": null,
+              "intentosReenvio": 0,
+              "ipAddress": null,
+              "userAgent": null
+            }
+          ]
+        }
+      },
+      {
+        "id": "notifications_unread",
+        "method": "GET",
+        "path": "/api/notifications/unread",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "Notification[]",
+          "example": [
+            {
+              "id": "65f1a2b3c4d5e6f7890a1c10",
+              "leida": false,
+              "estado": "pendiente_envio"
+            }
+          ]
+        }
+      },
+      {
+        "id": "notifications_unread_count",
+        "method": "GET",
+        "path": "/api/notifications/unread-count",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "{ unreadCount: number }",
+          "example": {
+            "unreadCount": 3
+          }
+        }
+      },
+      {
+        "id": "notifications_mark_read",
+        "method": "PUT",
+        "path": "/api/notifications/{notificationId}/read",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "{ status: string, message: string }",
+          "example": {
+            "status": "success",
+            "message": "Notificacion marcada como leida"
+          }
+        }
+      },
+      {
+        "id": "notifications_mark_all_read",
+        "method": "PUT",
+        "path": "/api/notifications/read-all",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "{ status: string, message: string }",
+          "example": {
+            "status": "success",
+            "message": "Todas las notificaciones marcadas como leidas"
+          }
+        }
+      },
+      {
+        "id": "notifications_delete_one",
+        "method": "DELETE",
+        "path": "/api/notifications/{notificationId}",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "{ status: string, message: string }",
+          "example": {
+            "status": "success",
+            "message": "Notificacion eliminada"
+          }
+        }
+      },
+      {
+        "id": "notifications_delete_all",
+        "method": "DELETE",
+        "path": "/api/notifications",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "{ status: string, message: string, count: number }",
+          "example": {
+            "status": "success",
+            "message": "Todas las notificaciones han sido eliminadas",
+            "count": 5
+          }
+        }
+      }
+    ],
+    "departments": [
+      {
+        "id": "department_list",
+        "method": "GET",
+        "path": "/api/departments",
+        "authRequired": false,
+        "successResponse": {
+          "status": 200,
+          "dataType": "DepartmentResponse[]",
+          "example": [
+            {
+              "id": "65f1a2b3c4d5e6f7890a2a01",
+              "nombre": "Finanzas",
+              "descripcion": "Area de aprobacion financiera",
+              "activo": true,
+              "createdAt": "2026-04-19T08:00:00Z",
+              "updatedAt": "2026-04-19T08:00:00Z"
+            }
+          ]
+        }
+      },
+      {
+        "id": "department_create",
+        "method": "POST",
+        "path": "/api/departments",
+        "authRequired": false,
+        "requestBodyType": "CreateDepartmentRequest",
+        "requestBodyExample": {
+          "nombre": "Juridico",
+          "descripcion": "Revision legal",
+          "activo": true
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "DepartmentResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a2a02",
+            "nombre": "Juridico",
+            "descripcion": "Revision legal",
+            "activo": true,
+            "createdAt": "2026-04-20T11:00:00Z",
+            "updatedAt": "2026-04-20T11:00:00Z"
+          }
+        }
+      }
+    ],
+    "users": [
+      {
+        "id": "user_list",
+        "method": "GET",
+        "path": "/api/users",
+        "authRequired": true,
+        "roles": ["ROLE_CLIENT", "ROLE_FUNCIONARIO", "ROLE_DESIGNER", "ROLE_ADMIN"],
+        "queryParams": {
+          "role": "string (opcional, p.ej. 'FUNCIONARIO')",
+          "activo": "boolean (opcional)"
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "UserListItemResponse[]",
+          "example": [
+            {
+              "id": "65f1a2b3c4d5e6f7890a1b2c",
+              "nombre": "Ana Perez",
+              "email": "ana@example.com",
+              "departmentId": "65f1a2b3c4d5e6f7890a1b2d"
+            }
+          ]
+        }
+      }
+    ],
+    "workflows": [
+      {
+        "id": "workflow_list",
+        "method": "GET",
+        "path": "/api/workflows",
+        "authRequired": true,
+        "queryParams": {
+          "estado": "string (opcional)",
+          "nombre": "string (opcional)"
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowListItemResponse[]",
+          "example": [
+            {
+              "id": "65f1a2b3c4d5e6f7890a3001",
+              "codigo": "WF-TRAM-001",
+              "nombre": "Tramite de permisos",
+              "descripcion": "Flujo principal",
+              "estado": "activo",
+              "createdAt": "2026-04-18T09:00:00Z",
+              "updatedAt": "2026-04-20T09:00:00Z",
+              "enEdicionPor": "65f1a2b3c4d5e6f7890a1b2c"
+            }
+          ]
+        }
+      },
+      {
+        "id": "workflow_list_active_for_processes",
+        "method": "GET",
+        "path": "/api/workflows/active-for-processes",
+        "authRequired": true,
+        "roles": ["ROLE_FUNCIONARIO", "ROLE_ADMIN"],
+        "description": "Lista todos los workflows activos para que funcionarios creen tramites (process instances).",
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowListItemResponse[]",
+          "example": [
+            {
+              "id": "65f1a2b3c4d5e6f7890a3001",
+              "codigo": "WF-TRAM-001",
+              "nombre": "Tramite de permisos",
+              "descripcion": "Flujo principal",
+              "estado": "activo",
+              "createdAt": "2026-04-18T09:00:00Z",
+              "updatedAt": "2026-04-20T09:00:00Z",
+              "enEdicionPor": "65f1a2b3c4d5e6f7890a1b2c"
+            }
+          ]
+        }
+      },
+      {
+        "id": "workflow_get",
+        "method": "GET",
+        "path": "/api/workflows/{workflowId}",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowDetailResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a3001",
+            "codigo": "WF-TRAM-001",
+            "nombre": "Tramite de permisos",
+            "descripcion": "Flujo principal",
+            "estado": "activo",
+            "createdBy": "65f1a2b3c4d5e6f7890a1b2c",
+            "enEdicionPor": "65f1a2b3c4d5e6f7890a1b2c",
+            "createdAt": "2026-04-18T09:00:00Z",
+            "updatedAt": "2026-04-20T09:00:00Z",
+            "lanes": [],
+            "nodes": [],
+            "edges": []
+          }
+        }
+      },
+      {
+        "id": "workflow_create",
+        "method": "POST",
+        "path": "/api/workflows",
+        "authRequired": true,
+        "requestBodyType": "CreateWorkflowRequest",
+        "requestBodyExample": {
+          "codigo": "WF-TRAM-002",
+          "nombre": "Licencias",
+          "descripcion": "Flujo de licencias",
+          "estado": "borrador"
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowDetailResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a3002",
+            "codigo": "WF-TRAM-002",
+            "nombre": "Licencias",
+            "descripcion": "Flujo de licencias",
+            "estado": "borrador",
+            "createdBy": "65f1a2b3c4d5e6f7890a1b2c",
+            "enEdicionPor": null,
+            "createdAt": "2026-04-20T11:15:00Z",
+            "updatedAt": "2026-04-20T11:15:00Z",
+            "lanes": [],
+            "nodes": [],
+            "edges": []
+          }
+        }
+      },
+      {
+        "id": "workflow_patch_metadata",
+        "method": "PATCH",
+        "path": "/api/workflows/{workflowId}",
+        "authRequired": true,
+        "requestBodyType": "UpdateWorkflowRequest",
+        "requestBodyExample": {
+          "nombre": "Licencias v2",
+          "descripcion": "Actualizacion de metadata",
+          "estado": "activo"
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowDetailResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a3002",
+            "codigo": "WF-TRAM-002",
+            "nombre": "Licencias v2",
+            "descripcion": "Actualizacion de metadata",
+            "estado": "activo",
+            "createdBy": "65f1a2b3c4d5e6f7890a1b2c",
+            "enEdicionPor": null,
+            "createdAt": "2026-04-20T11:15:00Z",
+            "updatedAt": "2026-04-20T11:20:00Z",
+            "lanes": [],
+            "nodes": [],
+            "edges": []
+          }
+        }
+      },
+      {
+        "id": "workflow_save_design",
+        "method": "PUT",
+        "path": "/api/workflows/{workflowId}/design",
+        "authRequired": true,
+        "requestBodyType": "SaveWorkflowDesignRequest",
+        "requestBodyExample": {
+          "lanes": [
+            {
+              "id": "lane_finanzas",
+              "nombre": "Finanzas",
+              "descripcion": "Revision financiera",
+              "responsable": "ROLE_FUNCIONARIO",
+              "color": "#3A86FF",
+              "departmentId": "65f1a2b3c4d5e6f7890a2a01",
+              "orden": 1
+            }
+          ],
+          "nodes": [
+            {
+              "id": "n_inicio",
+              "tipo": "inicio",
+              "nombre": "Inicio",
+              "descripcion": "Entrada del flujo",
+              "laneId": "lane_finanzas",
+              "departmentId": "65f1a2b3c4d5e6f7890a2a01",
+              "responsableTipo": "departamento",
+              "responsableUsuarioId": null,
+              "responsableRole": "Funcionario",
+              "slaMinutos": 60,
+              "permiteAdjuntos": false,
+              "form": null,
+              "reglasSalida": [],
+              "posicionX": 150.5,
+              "posicionY": 120.0
+            }
+          ],
+          "edges": [
+            {
+              "fromNodeId": "n_inicio",
+              "toNodeId": "n_fin",
+              "tipo": "secuencial",
+              "label": "continua"
+            }
+          ]
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowDetailResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a3002",
+            "codigo": "WF-TRAM-002",
+            "nombre": "Licencias v2",
+            "descripcion": "Actualizacion de metadata",
+            "estado": "activo",
+            "createdBy": "65f1a2b3c4d5e6f7890a1b2c",
+            "enEdicionPor": "65f1a2b3c4d5e6f7890a1b2c",
+            "createdAt": "2026-04-20T11:15:00Z",
+            "updatedAt": "2026-04-20T11:25:00Z",
+            "lanes": [
+              {
+                "id": "lane_finanzas",
+                "nombre": "Finanzas",
+                "descripcion": "Revision financiera",
+                "responsable": "ROLE_FUNCIONARIO",
+                "color": "#3A86FF",
+                "departmentId": "65f1a2b3c4d5e6f7890a2a01",
+                "orden": 1
+              }
+            ],
+            "nodes": [
+              {
+                "id": "n_inicio",
+                "tipo": "inicio",
+                "nombre": "Inicio",
+                "descripcion": "Entrada del flujo",
+                "laneId": "lane_finanzas",
+                "departmentId": "65f1a2b3c4d5e6f7890a2a01",
+                "responsableTipo": "departamento",
+                "responsableUsuarioId": null,
+                "responsableRole": "Funcionario",
+                "slaMinutos": 60,
+                "permiteAdjuntos": false,
+                "form": null,
+                "reglasSalida": [],
+                "posicionX": 150.5,
+                "posicionY": 120.0
+              }
+            ],
+            "edges": [
+              {
+                "fromNodeId": "n_inicio",
+                "toNodeId": "n_fin",
+                "tipo": "secuencial",
+                "label": "continua"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "workflow_validate",
+        "method": "POST",
+        "path": "/api/workflows/{workflowId}/validate",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowValidationResponse",
+          "example": {
+            "valid": true,
+            "errors": [],
+            "warnings": []
+          }
+        }
+      },
+      {
+        "id": "workflow_activate",
+        "method": "POST",
+        "path": "/api/workflows/{workflowId}/activate",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowDetailResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a3002",
+            "estado": "activo"
+          }
+        }
+      },
+      {
+        "id": "workflow_deactivate",
+        "method": "POST",
+        "path": "/api/workflows/{workflowId}/deactivate",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowDetailResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a3002",
+            "estado": "inactivo"
+          }
+        }
+      },
+      {
+        "id": "workflow_delete_logical",
+        "method": "DELETE",
+        "path": "/api/workflows/{workflowId}",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowDetailResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a3002",
+            "estado": "inactivo"
+          }
+        }
+      },
+      {
+        "id": "workflow_lock",
+        "method": "POST",
+        "path": "/api/workflows/{workflowId}/lock",
+        "authRequired": true,
+        "requestBodyType": "LockWorkflowRequest",
+        "requestBodyExample": {
+          "userId": "65f1a2b3c4d5e6f7890a1b2c"
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowLockResponse",
+          "example": {
+            "locked": true,
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "enEdicionPor": "65f1a2b3c4d5e6f7890a1b2c"
+          }
+        }
+      },
+      {
+        "id": "workflow_unlock",
+        "method": "DELETE",
+        "path": "/api/workflows/{workflowId}/lock?userId={userId}",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowLockResponse",
+          "example": {
+            "locked": false,
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "enEdicionPor": null
+          }
+        }
+      },
+      {
+        "id": "workflow_lock_status",
+        "method": "GET",
+        "path": "/api/workflows/{workflowId}/lock",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "WorkflowLockResponse",
+          "example": {
+            "locked": true,
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "enEdicionPor": "65f1a2b3c4d5e6f7890a1b2c"
+          }
+        }
+      },
+      {
+        "id": "workflow_decision_context",
+        "method": "GET",
+        "path": "/api/workflows/{workflowId}/decision-context/{decisionNodeId}",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "DecisionContextResponse",
+          "example": {
+            "decisionNodeId": "n_decision_1",
+            "incomingNodeIds": ["n_revision"],
+            "fields": [
+              {
+                "fieldId": "aprobado",
+                "label": "Aprobado",
+                "type": "bool",
+                "sourceNodeId": "n_revision"
+              },
+              {
+                "fieldId": "monto",
+                "label": "Monto",
+                "type": "number",
+                "sourceNodeId": "n_revision"
+              }
+            ],
+            "operatorsByType": {
+              "bool": ["==", "!="],
+              "number": [">", ">=", "<", "<=", "==", "!="],
+              "text": ["==", "!=", "contains", "startsWith", "endsWith"],
+              "date": [">", ">=", "<", "<=", "==", "!="]
+            }
+          }
+        }
+      },
+      {
+        "id": "workflow_decision_rules_patch",
+        "method": "PATCH",
+        "path": "/api/workflows/{workflowId}/nodes/{decisionNodeId}/decision-rules",
+        "authRequired": true,
+        "requestBodyType": "DecisionRulesPatchRequest",
+        "requestBodyExample": {
+          "mode": "binary",
+          "decisionRule": {
+            "field": "monto",
+            "operator": "GREATER_THAN",
+            "value": "1000",
+            "onTrueDestinoNodeId": "n_aprobado",
+            "onFalseDestinoNodeId": "n_rechazado"
+          }
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "DecisionRulesPatchResponse",
+          "example": {
+            "nodeId": "n_decision_1",
+            "updatedAt": "2026-04-21T09:40:00Z",
+            "decisionRule": {
+              "field": "monto",
+              "operator": "GREATER_THAN",
+              "value": "1000",
+              "onTrueDestinoNodeId": "n_aprobado",
+              "onFalseDestinoNodeId": "n_rechazado"
+            }
+          }
+        }
+      },
+      {
+        "id": "workflow_decision_rules_validate",
+        "method": "POST",
+        "path": "/api/workflows/{workflowId}/nodes/{decisionNodeId}/decision-rules/validate",
+        "authRequired": true,
+        "requestBodyType": "DecisionRulesValidateRequest",
+        "requestBodyExample": {
+          "mode": "binary",
+          "decisionRule": {
+            "field": "monto",
+            "operator": "GREATER_THAN",
+            "value": "1000",
+            "onTrueDestinoNodeId": "n_aprobado",
+            "onFalseDestinoNodeId": "n_rechazado"
+          }
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "DecisionRulesValidationResult",
+          "example": {
+            "valid": true,
+            "errors": [],
+            "warnings": []
+          }
+        }
+      },
+      {
+        "id": "workflow_decision_rules_simulate",
+        "method": "POST",
+        "path": "/api/workflows/{workflowId}/nodes/{decisionNodeId}/decision-rules/simulate",
+        "authRequired": true,
+        "requestBodyType": "DecisionRulesSimulateRequest",
+        "requestBodyExample": {
+          "mode": "binary",
+          "input": {
+            "aprobado": true,
+            "monto": 1200
+          },
+          "decisionRule": {
+            "field": "monto",
+            "operator": "GREATER_THAN",
+            "value": "1000",
+            "onTrueDestinoNodeId": "n_aprobado",
+            "onFalseDestinoNodeId": "n_rechazado"
+          }
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "DecisionRulesSimulateResponse",
+          "example": {
+            "matched": true,
+            "matchedRule": "Aprobado",
+            "destinoNodeId": "n_aprobado",
+            "trace": ["aprobado == true => true"]
+          }
+        }
+      }
+    ],
+    "collaborators": [
+      {
+        "id": "collaborator_invite",
+        "method": "POST",
+        "path": "/api/workflows/{workflowId}/collaborators",
+        "authRequired": true,
+        "requestBodyType": "InviteCollaboratorRequest",
+        "requestBodyExample": {
+          "email": "colaborador@example.com",
+          "role": "DESIGNER"
+        },
+        "successResponse": {
+          "status": 201,
+          "dataType": "CollaboratorResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a4001",
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "userId": "65f1a2b3c4d5e6f7890a1b55",
+            "role": "DESIGNER",
+            "status": "PENDING",
+            "invitedBy": "65f1a2b3c4d5e6f7890a1b2c",
+            "invitedAt": "2026-04-20T12:00:00Z",
+            "acceptedAt": null
+          }
+        }
+      },
+      {
+        "id": "collaborator_list",
+        "method": "GET",
+        "path": "/api/workflows/{workflowId}/collaborators",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "CollaboratorResponse[]",
+          "example": [
+            {
+              "id": "65f1a2b3c4d5e6f7890a4001",
+              "workflowId": "65f1a2b3c4d5e6f7890a3002",
+              "userId": "65f1a2b3c4d5e6f7890a1b55",
+              "role": "DESIGNER",
+              "status": "ACCEPTED",
+              "invitedBy": "65f1a2b3c4d5e6f7890a1b2c",
+              "invitedAt": "2026-04-20T12:00:00Z",
+              "acceptedAt": "2026-04-20T12:10:00Z"
+            }
+          ]
+        }
+      },
+      {
+        "id": "collaborator_accept",
+        "method": "POST",
+        "path": "/api/workflows/{workflowId}/collaborators/{collaboratorId}/accept",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "CollaboratorResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a4001",
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "userId": "65f1a2b3c4d5e6f7890a1b55",
+            "role": "DESIGNER",
+            "status": "ACCEPTED",
+            "invitedBy": "65f1a2b3c4d5e6f7890a1b2c",
+            "invitedAt": "2026-04-20T12:00:00Z",
+            "acceptedAt": "2026-04-20T12:10:00Z"
+          }
+        }
+      },
+      {
+        "id": "collaborator_pending_list",
+        "method": "GET",
+        "path": "/api/collaborations/pending",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "CollaboratorResponse[]",
+          "example": [
+            {
+              "id": "65f1a2b3c4d5e6f7890a4001",
+              "workflowId": "65f1a2b3c4d5e6f7890a3002",
+              "userId": "65f1a2b3c4d5e6f7890a1b55",
+              "role": "DESIGNER",
+              "status": "PENDING",
+              "invitedBy": "65f1a2b3c4d5e6f7890a1b2c",
+              "invitedAt": "2026-04-20T12:00:00Z",
+              "acceptedAt": null
+            }
+          ]
+        }
+      },
+      {
+        "id": "collaborator_reject",
+        "method": "POST",
+        "path": "/api/workflows/{workflowId}/collaborators/{collaboratorId}/reject",
+        "authRequired": true,
+        "successResponse": {
+          "status": 204,
+          "dataType": "empty",
+          "example": null
+        }
+      },
+      {
+        "id": "collaborator_remove",
+        "method": "DELETE",
+        "path": "/api/workflows/{workflowId}/collaborators/{userId}",
+        "authRequired": true,
+        "successResponse": {
+          "status": 204,
+          "dataType": "empty",
+          "example": null
+        }
+      },
+      {
+        "id": "collaborator_change_role",
+        "method": "PUT",
+        "path": "/api/workflows/{workflowId}/collaborators/{userId}/role",
+        "authRequired": true,
+        "requestBodyType": "Map<string,string>",
+        "requestBodyExample": {
+          "role": "VIEWER"
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "CollaboratorResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a4001",
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "userId": "65f1a2b3c4d5e6f7890a1b55",
+            "role": "VIEWER",
+            "status": "ACCEPTED",
+            "invitedBy": "65f1a2b3c4d5e6f7890a1b2c",
+            "invitedAt": "2026-04-20T12:00:00Z",
+            "acceptedAt": "2026-04-20T12:10:00Z"
+          }
+        }
+      }
+    ],
+    "processInstances": [
+      {
+        "id": "process_list_all",
+        "method": "GET",
+        "path": "/api/process-instances/all",
+        "authRequired": true,
+        "roles": ["ROLE_FUNCIONARIO", "ROLE_DESIGNER", "ROLE_ADMIN"],
+        "description": "Lista todos los tramites con informacion completa de cada process instance.",
+        "successResponse": {
+          "status": 200,
+          "dataType": "ProcessInstanceResponse[]",
+          "example": [
+              {
+                "id": "65f1a2b3c4d5e6f7890a5001",
+                "codigo": "TRM-LICENCIAS-123456",
+                "workflowId": "65f1a2b3c4d5e6f7890a3002",
+                "clienteId": "65f1a2b3c4d5e6f7890a1b90",
+              "estado": "en_proceso",
+              "currentNodeIds": ["n_revision"],
+              "actividades": [
+                {
+                  "id": "act-001",
+                  "nodeId": "n_revision",
+                  "nombre": "Revision de documentos",
+                  "estado": "pendiente",
+                  "responsableTipo": "usuario",
+                  "usuarioId": "65f1a2b3c4d5e6f7890a1b60",
+                  "departmentId": "65f1a2b3c4d5e6f7890a2a01",
+                  "formulario": null,
+                  "respuestaFormulario": {},
+                  "slaMinutos": 120,
+                  "permiteAdjuntos": true,
+                  "fechaInicio": "2026-04-20T12:31:00Z",
+                  "fechaFin": null
+                }
+              ],
+              "createdAt": "2026-04-20T12:30:00Z",
+              "updatedAt": "2026-04-20T12:45:00Z",
+              "finishedAt": null
+            }
+          ]
+        }
+      },
+      {
+        "id": "process_create",
+        "method": "POST",
+        "path": "/api/process-instances",
+        "authRequired": true,
+        "requestBodyType": "CreateProcessInstanceRequest",
+        "requestBodyExample": {
+          "workflowId": "65f1a2b3c4d5e6f7890a3002",
+          "clienteId": "65f1a2b3c4d5e6f7890a1b90",
+          "datosIniciales": {
+            "numeroSolicitud": "SOL-2026-0001",
+            "monto": 1200.5
+          }
+        },
+        "successResponse": {
+          "status": 201,
+          "dataType": "ProcessInstanceResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a5001",
+            "codigo": "TRM-LICENCIAS-123456",
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "clienteId": "65f1a2b3c4d5e6f7890a1b90",
+            "estado": "pendiente",
+            "currentNodeIds": ["n_inicio"],
+            "actividades": [],
+            "createdAt": "2026-04-20T12:30:00Z",
+            "updatedAt": "2026-04-20T12:30:00Z",
+            "finishedAt": null
+          }
+        }
+      },
+      {
+        "id": "process_list_my",
+        "method": "GET",
+        "path": "/api/process-instances",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "ProcessInstanceResponse[]",
+          "example": [
+              {
+                "id": "65f1a2b3c4d5e6f7890a5001",
+                "codigo": "TRM-LICENCIAS-123456",
+                "workflowId": "65f1a2b3c4d5e6f7890a3002",
+                "clienteId": "65f1a2b3c4d5e6f7890a1b90",
+              "estado": "en_proceso",
+              "currentNodeIds": ["n_revision"],
+              "actividades": [],
+              "createdAt": "2026-04-20T12:30:00Z",
+              "updatedAt": "2026-04-20T12:45:00Z",
+              "finishedAt": null
+            }
+          ]
+        }
+      },
+      {
+        "id": "process_get",
+        "method": "GET",
+        "path": "/api/process-instances/{processInstanceId}",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "ProcessInstanceResponse",
+          "example": {
+            "id": "65f1a2b3c4d5e6f7890a5001",
+            "codigo": "TRM-LICENCIAS-123456",
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "clienteId": "65f1a2b3c4d5e6f7890a1b90",
+            "estado": "en_proceso",
+            "currentNodeIds": ["n_revision"],
+            "actividades": [
+              {
+                "id": "act-001",
+                "nodeId": "n_revision",
+                "estado": "pendiente",
+                "usuarioId": "65f1a2b3c4d5e6f7890a1b60",
+                "departmentId": "65f1a2b3c4d5e6f7890a2a01",
+                "responsableTipo": "usuario",
+                "formulario": null,
+                "respuestaFormulario": {},
+                "fechaInicio": "2026-04-20T12:31:00Z",
+                "fechaFin": null
+              }
+            ],
+            "createdAt": "2026-04-20T12:30:00Z",
+            "updatedAt": "2026-04-20T12:45:00Z",
+            "finishedAt": null
+          }
+        }
+      },
+      {
+        "id": "process_history",
+        "method": "GET",
+        "path": "/api/process-instances/{processInstanceId}/history",
+        "authRequired": true,
+        "successResponse": {
+          "status": 200,
+          "dataType": "HistoryEvent[]",
+          "example": [
+            {
+              "tipo": "tramite_creado",
+              "nodeId": "n_inicio",
+              "nodeIds": ["n_inicio"],
+              "usuarioId": "65f1a2b3c4d5e6f7890a1b2c",
+              "userName": "Ana Perez",
+              "detalle": "Tramite creado",
+              "fecha": "2026-04-20T12:30:00Z",
+              "dataAnterior": {},
+              "dataNueva": {
+                "estado": "pendiente"
+              },
+              "ipAddress": "192.168.1.10",
+              "status": "SUCCESS",
+              "errorMessage": null
+            }
+          ]
+        }
+      },
+      {
+        "id": "process_pending_activities",
+        "method": "GET",
+        "path": "/api/process-instances/activities/pending",
+        "description": "Obtiene las actividades pendientes para el funcionario (asignadas a él o a su departamento). Cada actividad incluye el formulario completo (campos, tipos, opciones) que debe rellenar para completar el nodo.",
+        "authRequired": true,
+        "roles": ["ROLE_FUNCIONARIO", "ROLE_ADMIN"],
+        "successResponse": {
+          "status": 200,
+          "dataType": "ProcessInstanceResponse[]",
+          "example": [
+              {
+                "id": "65f1a2b3c4d5e6f7890a5001",
+                "codigo": "TRM-LICENCIAS-123456",
+                "workflowId": "65f1a2b3c4d5e6f7890a3002",
+                "clienteId": "65f1a2b3c4d5e6f7890a1b90",
+              "estado": "en_proceso",
+              "currentNodeIds": ["n_revision"],
+              "actividades": [
+                {
+                  "id": "act-001",
+                  "nodeId": "n_revision",
+                  "nombre": "Revisión de documentos",
+                  "estado": "pendiente",
+                  "responsableTipo": "usuario",
+                  "usuarioId": "65f1a2b3c4d5e6f7890a1b60",
+                  "departmentId": null,
+                  "slaMinutos": 120,
+                  "permiteAdjuntos": true,
+                  "formulario": {
+                    "titulo": "Formulario de revisión",
+                    "descripcion": "Complete los campos para aprobar o rechazar el trámite",
+                    "campos": [
+                      {
+                        "id": "aprobado",
+                        "label": "¿Aprueba el trámite?",
+                        "tipo": "bool",
+                        "required": true,
+                        "options": [],
+                        "placeholder": null
+                      },
+                      {
+                        "id": "comentario",
+                        "label": "Comentario",
+                        "tipo": "textarea",
+                        "required": false,
+                        "options": [],
+                        "placeholder": "Ingrese observaciones..."
+                      }
+                    ]
+                  },
+                  "respuestaFormulario": {},
+                  "fechaInicio": "2026-04-20T12:31:00Z",
+                  "fechaFin": null
+                }
+              ],
+              "createdAt": "2026-04-20T12:30:00Z",
+              "updatedAt": "2026-04-20T12:45:00Z",
+              "finishedAt": null
+            }
+          ]
+        }
+      },
+      {
+        "id": "process_complete_activity",
+        "method": "POST",
+        "path": "/api/process-instances/activities/{actividadId}/complete",
+        "authRequired": true,
+        "requestBodyType": "multipart/form-data",
+        "requestParts": {
+          "payload": "string (JSON de CompleteActivityRequest)",
+          "files": "binary[]",
+          "fileFieldIds": "string[] (mismo orden que files[]; cada item es id de campo tipo=file)"
+        },
+        "requestBodyExample": {
+          "payload": {
+            "respuestaFormulario": {
+              "aprobado": true,
+              "comentario": "Cumple requisitos",
+              "comprobantePago": null,
+              "fotoLocal": null
+            },
+            "comentarios": "Revision completada"
+          },
+          "fileFieldIds": ["comprobantePago", "fotoLocal"],
+          "files": ["<binary-0>", "<binary-1>"]
+        },
+        "successResponse": {
+          "status": 200,
+          "dataType": "ProcessInstanceResponse",
+          "example": {
+            "id": "6601b3c4d5e6f7890a1b2c3d",
+            "codigo": "TRM-LICENCIAS-123456",
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "clienteId": "65f1a2b3c4d5e6f7890a1b2c",
+            "estado": "en_proceso",
+            "currentNodeIds": ["n_siguiente_paso"],
+            "actividades": [
+              {
+                "id": "act-123",
+                "nodeId": "n_inicio",
+                "estado": "completada",
+                "usuarioId": "65f1a2b3c4d5e6f7890a1b2c",
+                "respuestaFormulario": {
+                  "aprobado": true,
+                  "comentario": "Cumple requisitos",
+                  "comprobantePago": {
+                    "fileId": "6602f3c4d5e6f7890a1b9abc",
+                    "url": "https://res.cloudinary.com/mi-cloud/raw/upload/v1710000000/workflow/proc_6601/act_123/comprobante.pdf",
+                    "publicId": "workflow/proc_6601/act_123/comprobante",
+                    "nombre": "comprobante.pdf",
+                    "mimeType": "application/pdf",
+                    "sizeBytes": 384221,
+                    "provider": "cloudinary"
+                  },
+                  "fotoLocal": {
+                    "fileId": "6602f3c4d5e6f7890a1b9abd",
+                    "url": "https://res.cloudinary.com/mi-cloud/image/upload/v1710000000/workflow/proc_6601/act_123/foto-local.jpg",
+                    "publicId": "workflow/proc_6601/act_123/foto-local",
+                    "nombre": "foto-local.jpg",
+                    "mimeType": "image/jpeg",
+                    "sizeBytes": 128332,
+                    "provider": "cloudinary"
+                  }
+                },
+                "fechaInicio": "2026-04-20T12:00:00Z",
+                "fechaFin": "2026-04-20T12:05:00Z"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

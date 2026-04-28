@@ -1,0 +1,257 @@
+{
+	"project": "app-movil-cliente",
+	"generatedAt": "2026-04-24",
+	"source": {
+		"authController": "src/main/java/com/workflow/demo/auth/controller/AuthController.java",
+		"processInstanceController": "src/main/java/com/workflow/demo/workflowdesign/controller/ProcessInstanceController.java",
+		"securityConfig": "src/main/java/com/workflow/demo/auth/config/SecurityConfig.java"
+	},
+	"baseUrl": "{API_BASE_URL}",
+	"authentication": {
+		"type": "Bearer JWT",
+		"loginEndpoint": "/api/auth/login",
+		"refreshEndpoint": "/api/auth/refresh",
+		"header": "Authorization: Bearer {accessToken}"
+	},
+	"endpoints": [
+		{
+			"id": "auth_login",
+			"module": "auth",
+			"name": "Login cliente",
+			"method": "POST",
+			"path": "/api/auth/login",
+			"public": true,
+			"rolesAllowed": [
+				"CLIENT",
+				"FUNCIONARIO",
+				"DESIGNER",
+				"ADMIN"
+			],
+			"description": "Autentica usuario y devuelve accessToken/refreshToken junto a perfil.",
+			"headers": {
+				"Content-Type": "application/json"
+			},
+			"requestBody": {
+				"contentType": "application/json",
+				"schemaRef": "LoginRequest",
+				"required": true
+			},
+			"responses": {
+				"200": {
+					"description": "Autenticacion correcta",
+					"schemaRef": "AuthResponse"
+				},
+				"400": {
+					"description": "Validacion fallida (email/password faltante o invalido)",
+					"schemaRef": "SpringBootDefaultError"
+				},
+				"401": {
+					"description": "Credenciales invalidas",
+					"schemaRef": "SpringBootDefaultError"
+				}
+			},
+			"exampleRequest": {
+				"email": "cliente@correo.com",
+				"password": "123456"
+			}
+		},
+		{
+			"id": "auth_refresh",
+			"module": "auth",
+			"name": "Refrescar token",
+			"method": "POST",
+			"path": "/api/auth/refresh",
+			"public": true,
+			"rolesAllowed": [
+				"CLIENT",
+				"FUNCIONARIO",
+				"DESIGNER",
+				"ADMIN"
+			],
+			"description": "Renueva access token usando refresh token.",
+			"headers": {
+				"Content-Type": "application/json"
+			},
+			"requestBody": {
+				"contentType": "application/json",
+				"schemaRef": "RefreshTokenRequest",
+				"required": true
+			},
+			"responses": {
+				"200": {
+					"description": "Token renovado",
+					"schemaRef": "AuthResponse"
+				},
+				"400": {
+					"description": "Refresh token invalido o ausente",
+					"schemaRef": "SpringBootDefaultError"
+				},
+				"401": {
+					"description": "No autorizado",
+					"schemaRef": "JwtUnauthorizedError"
+				}
+			}
+		},
+		{
+			"id": "auth_logout",
+			"module": "auth",
+			"name": "Cerrar sesion",
+			"method": "POST",
+			"path": "/api/auth/logout",
+			"public": false,
+			"rolesAllowed": [
+				"CLIENT",
+				"FUNCIONARIO",
+				"DESIGNER",
+				"ADMIN"
+			],
+			"description": "Cierra sesion del usuario autenticado.",
+			"headers": {
+				"Authorization": "Bearer {accessToken}"
+			},
+			"responses": {
+				"200": {
+					"description": "Sesion cerrada",
+					"schema": {
+						"type": "string",
+						"example": "Sesion cerrada exitosamente"
+					}
+				},
+				"401": {
+					"description": "Token invalido o ausente",
+					"schemaRef": "JwtUnauthorizedError"
+				}
+			}
+		},
+		{
+			"id": "process_list_mine",
+			"module": "tramites",
+			"name": "Listar tramites del cliente autenticado",
+			"method": "GET",
+			"path": "/api/process-instances",
+			"public": false,
+			"rolesAllowed": [
+				"CLIENT",
+				"FUNCIONARIO",
+				"ADMIN"
+			],
+			"description": "Devuelve tramites por clienteId = usuario autenticado. Para app cliente usar rol CLIENT.",
+			"headers": {
+				"Authorization": "Bearer {accessToken}"
+			},
+			"responses": {
+				"200": {
+					"description": "Listado de tramites del cliente",
+					"schema": {
+						"type": "array",
+						"itemsRef": "ProcessInstanceResponse"
+					}
+				},
+				"401": {
+					"description": "Token invalido o ausente",
+					"schemaRef": "JwtUnauthorizedError"
+				},
+				"403": {
+					"description": "Rol sin permisos",
+					"schemaRef": "SpringBootDefaultError"
+				}
+			}
+		},
+		{
+			"id": "process_detail",
+			"module": "tramites",
+			"name": "Obtener detalle de tramite",
+			"method": "GET",
+			"path": "/api/process-instances/{processInstanceId}",
+			"public": false,
+			"rolesAllowed": [
+				"CLIENT",
+				"FUNCIONARIO",
+				"DESIGNER",
+				"ADMIN"
+			],
+			"description": "Devuelve detalle completo del tramite. Incluye ProcessInstanceResponse con workflowSnapshot para reconstruir workflow, nodos, aristas y lanes en el movil.",
+			"headers": {
+				"Authorization": "Bearer {accessToken}"
+			},
+			"pathParams": [
+				{
+					"name": "processInstanceId",
+					"type": "string",
+					"format": "objectId-hex",
+					"required": true,
+					"example": "6809a6eb2f9f7d3abbe12f01"
+				}
+			],
+			"responses": {
+				"200": {
+					"description": "Detalle completo del tramite con workflowSnapshot",
+					"schemaRef": "ProcessInstanceResponse"
+				},
+				"400": {
+					"description": "ID invalido o tramite no encontrado",
+					"schemaRef": "SpringBootDefaultError"
+				},
+				"401": {
+					"description": "Token invalido o ausente",
+					"schemaRef": "JwtUnauthorizedError"
+				},
+				"403": {
+					"description": "Rol sin permisos",
+					"schemaRef": "SpringBootDefaultError"
+				}
+			}
+		},
+		{
+			"id": "process_history",
+			"module": "tramites",
+			"name": "Obtener historial de tramite",
+			"method": "GET",
+			"path": "/api/process-instances/{processInstanceId}/history",
+			"public": false,
+			"rolesAllowed": [
+				"CLIENT",
+				"FUNCIONARIO",
+				"DESIGNER",
+				"ADMIN"
+			],
+			"description": "Devuelve trazabilidad del tramite (eventos de historial).",
+			"headers": {
+				"Authorization": "Bearer {accessToken}"
+			},
+			"pathParams": [
+				{
+					"name": "processInstanceId",
+					"type": "string",
+					"format": "objectId-hex",
+					"required": true,
+					"example": "6809a6eb2f9f7d3abbe12f01"
+				}
+			],
+			"responses": {
+				"200": {
+					"description": "Historial de eventos del tramite",
+					"schemaRef": "ProcessInstanceHistoryResponse"
+				},
+				"400": {
+					"description": "ID invalido o tramite no encontrado",
+					"schemaRef": "SpringBootDefaultError"
+				},
+				"401": {
+					"description": "Token invalido o ausente",
+					"schemaRef": "JwtUnauthorizedError"
+				},
+				"403": {
+					"description": "Rol sin permisos",
+					"schemaRef": "SpringBootDefaultError"
+				}
+			}
+		}
+	],
+	"notes": [
+		"Para app movil cliente, endpoints minimos obligatorios: auth_login y process_list_mine.",
+		"El endpoint process_detail ahora devuelve workflowSnapshot completo para dibujar workflow, nodos y relaciones en el movil.",
+		"Si UI requiere seguimiento de auditoria, usar process_history.",
+		"SecurityConfig define JWT stateless: todo endpoint fuera de /api/auth/login|register|refresh requiere Bearer token."
+	]
+}

@@ -1,0 +1,493 @@
+{
+  "websocket": {
+    "version": "2.2.0",
+    "generatedAt": "2026-04-26",
+    "transport": "STOMP over WebSocket/SockJS",
+    "baseUrl": "ws://localhost:8080/ws/workflow",
+    "auth": {
+      "type": "JWT Bearer Token",
+      "header": "Authorization",
+      "format": "Bearer <token>",
+      "required": true
+    },
+    "authorization": {
+      "model": "RBAC + ABAC",
+      "rules": [
+        "Subscribe/read requires view permission",
+        "Mutations require canEditWorkflow",
+        "Lock conflict check rejects editing by another user"
+      ]
+    },
+    "messageType": {
+      "request": "WorkflowChangeMessage",
+      "fields": {
+        "action": "string",
+        "workflowId": "string",
+        "userId": "string(ObjectId)",
+        "userName": "string",
+        "data": "object|null",
+        "timestamp": "number(ms)",
+        "status": "string",
+        "message": "string",
+        "messageId": "string|null",
+        "nodeId": "string|null",
+        "edgeId": "string|null",
+        "laneId": "string|null",
+        "iteracion": "number|null"
+      }
+    },
+    "methods": [
+      {
+        "id": "ws_connect",
+        "destination": "/app/workflow/{workflowId}/connect",
+        "type": "SEND",
+        "requestExample": {
+          "action": "connect",
+          "workflowId": "65f1a2b3c4d5e6f7890a3002",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c",
+          "userName": "Ana Perez",
+          "messageId": "msg-001"
+        },
+        "successfulResponse": {
+          "broadcastChannel": "/topic/workflow/{workflowId}",
+          "dataType": "WorkflowChangeMessage",
+          "example": {
+            "action": "user_connected",
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "userId": "65f1a2b3c4d5e6f7890a1b2c",
+            "userName": "Ana Perez",
+            "timestamp": 1776630000000,
+            "status": "success",
+            "message": "Ana Perez se ha conectado"
+          }
+        },
+        "additionalUserQueue": {
+          "channel": "/user/queue/editing-state",
+          "dataType": "WorkflowEditingState",
+          "example": {
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "editedBy": "65f1a2b3c4d5e6f7890a1b2c",
+            "editedByName": "Ana Perez",
+            "lockedAt": 1776630000000,
+            "lastModified": 1776630000000,
+            "activeEditors": [
+              {
+                "userId": "65f1a2b3c4d5e6f7890a1b2c",
+                "userName": "Ana Perez",
+                "email": "ana@example.com",
+                "connectedAt": 1776630000000,
+                "cursorPosition": "150,200",
+                "selectedElement": "n_inicio"
+              }
+            ],
+            "lanes": [],
+            "nodes": [],
+            "edges": [],
+            "pendingChanges": []
+          }
+        }
+      },
+      {
+        "id": "ws_disconnect",
+        "destination": "/app/workflow/{workflowId}/disconnect",
+        "type": "SEND",
+        "requestExample": {
+          "action": "disconnect",
+          "workflowId": "65f1a2b3c4d5e6f7890a3002",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c",
+          "userName": "Ana Perez",
+          "messageId": "msg-002"
+        },
+        "successfulResponse": {
+          "broadcastChannel": "/topic/workflow/{workflowId}",
+          "dataType": "WorkflowChangeMessage",
+          "example": {
+            "action": "user_disconnected",
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "userId": "65f1a2b3c4d5e6f7890a1b2c",
+            "userName": "Ana Perez",
+            "timestamp": 1776630060000,
+            "status": "success",
+            "message": "Ana Perez se ha desconectado"
+          }
+        }
+      },
+      {
+        "id": "ws_add_node",
+        "destination": "/app/workflow/{workflowId}/node/add",
+        "type": "SEND",
+        "authz": "canEditWorkflow",
+        "requestExample": {
+          "action": "node_added",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c",
+          "userName": "Ana Perez",
+          "messageId": "msg-010",
+          "nodeId": "n_revision",
+          "data": {
+            "id": "n_revision",
+            "tipo": "actividad",
+            "nombre": "Revision",
+            "descripcion": "Revision de datos",
+            "laneId": "lane_finanzas",
+            "departmentId": "65f1a2b3c4d5e6f7890a2a01",
+            "responsableTipo": "usuario",
+            "responsableUsuarioId": "65f1a2b3c4d5e6f7890a1b60",
+            "responsableRole": "Funcionario",
+            "slaMinutos": 120,
+            "permiteAdjuntos": true,
+            "form": null,
+            "decisionRule": null,
+            "posicionX": 320.0,
+            "posicionY": 180.0
+          }
+        },
+        "successfulResponse": {
+          "broadcastChannel": "/topic/workflow/{workflowId}",
+          "dataType": "WorkflowChangeMessage",
+          "example": {
+            "action": "node_added",
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "userId": "65f1a2b3c4d5e6f7890a1b2c",
+            "userName": "Ana Perez",
+            "nodeId": "n_revision",
+            "timestamp": 1776630100000,
+            "messageId": "msg-010",
+            "data": {
+              "id": "n_revision",
+              "tipo": "actividad",
+              "nombre": "Revision",
+              "posicionX": 320.0,
+              "posicionY": 180.0
+            }
+          }
+        }
+      },
+      {
+        "id": "ws_update_node",
+        "destination": "/app/workflow/{workflowId}/node/update",
+        "type": "SEND",
+        "authz": "canEditWorkflow",
+        "requestExample": {
+          "action": "node_updated",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c",
+          "userName": "Ana Perez",
+          "messageId": "msg-011",
+          "nodeId": "n_revision",
+          "data": {
+            "id": "n_revision",
+            "nombre": "Revision final",
+            "posicionX": 360.5,
+            "posicionY": 210.25
+          }
+        },
+        "successfulResponse": {
+          "broadcastChannel": "/topic/workflow/{workflowId}",
+          "dataType": "WorkflowChangeMessage",
+          "example": {
+            "action": "node_updated",
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "userId": "65f1a2b3c4d5e6f7890a1b2c",
+            "nodeId": "n_revision",
+            "timestamp": 1776630120000,
+            "data": {
+              "id": "n_revision",
+              "nombre": "Revision final",
+              "posicionX": 360.5,
+              "posicionY": 210.25
+            }
+          }
+        }
+      },
+      {
+        "id": "ws_delete_node",
+        "destination": "/app/workflow/{workflowId}/node/delete",
+        "type": "SEND",
+        "authz": "canEditWorkflow",
+        "notes": [
+          "Enviar solo node_deleted con nodeId.",
+          "El backend elimina automaticamente las aristas conectadas al nodo; no es necesario enviar edge_deleted adicionales por cada arista asociada."
+        ],
+        "requestExample": {
+          "action": "node_deleted",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c",
+          "userName": "Ana Perez",
+          "messageId": "msg-012",
+          "nodeId": "n_revision"
+        },
+        "successfulResponse": {
+          "broadcastChannel": "/topic/workflow/{workflowId}",
+          "dataType": "WorkflowChangeMessage",
+          "example": {
+            "action": "node_deleted",
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "nodeId": "n_revision",
+            "timestamp": 1776630150000
+          }
+        }
+      },
+      {
+        "id": "ws_add_edge",
+        "destination": "/app/workflow/{workflowId}/edge/add",
+        "type": "SEND",
+        "authz": "canEditWorkflow",
+        "requestExample": {
+          "action": "edge_added",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c",
+          "messageId": "msg-020",
+          "edgeId": "e1",
+          "data": {
+            "fromNodeId": "n_inicio",
+            "toNodeId": "n_revision",
+            "tipo": "secuencial",
+            "label": "continua"
+          }
+        },
+        "successfulResponse": {
+          "broadcastChannel": "/topic/workflow/{workflowId}",
+          "dataType": "WorkflowChangeMessage",
+          "example": {
+            "action": "edge_added",
+            "edgeId": "e1",
+            "data": {
+              "fromNodeId": "n_inicio",
+              "toNodeId": "n_revision",
+              "tipo": "secuencial",
+              "label": "continua"
+            }
+          }
+        }
+      },
+      {
+        "id": "ws_delete_edge",
+        "destination": "/app/workflow/{workflowId}/edge/delete",
+        "type": "SEND",
+        "authz": "canEditWorkflow",
+        "notes": [
+          "Para eliminar una arista de forma deterministica, enviar data.fromNodeId y data.toNodeId.",
+          "edgeId es opcional y se usa como metadata de cliente; no reemplaza from/to si el backend no tiene ese edgeId indexado."
+        ],
+        "requestExample": {
+          "action": "edge_deleted",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c",
+          "messageId": "msg-021",
+          "edgeId": "e1",
+          "data": {
+            "fromNodeId": "n_inicio",
+            "toNodeId": "n_revision"
+          }
+        },
+        "successfulResponse": {
+          "broadcastChannel": "/topic/workflow/{workflowId}",
+          "dataType": "WorkflowChangeMessage",
+          "example": {
+            "action": "edge_deleted",
+            "edgeId": "e1",
+            "data": {
+              "fromNodeId": "n_inicio",
+              "toNodeId": "n_revision"
+            },
+            "timestamp": 1776630200000
+          }
+        }
+      },
+      {
+        "id": "ws_add_lane",
+        "destination": "/app/workflow/{workflowId}/lane/add",
+        "type": "SEND",
+        "authz": "canEditWorkflow",
+        "requestExample": {
+          "action": "lane_added",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c",
+          "messageId": "msg-030",
+          "laneId": "lane_juridico",
+          "data": {
+            "id": "lane_juridico",
+            "nombre": "Juridico",
+            "descripcion": "Revision legal",
+            "responsable": "ROLE_FUNCIONARIO",
+            "color": "#2A9D8F",
+            "departmentId": "65f1a2b3c4d5e6f7890a2a02",
+            "orden": 2
+          }
+        },
+        "successfulResponse": {
+          "broadcastChannel": "/topic/workflow/{workflowId}",
+          "dataType": "WorkflowChangeMessage",
+          "example": {
+            "action": "lane_added",
+            "laneId": "lane_juridico",
+            "data": {
+              "id": "lane_juridico",
+              "nombre": "Juridico",
+              "departmentId": "65f1a2b3c4d5e6f7890a2a02",
+              "orden": 2
+            }
+          }
+        }
+      },
+      {
+        "id": "ws_update_lane",
+        "destination": "/app/workflow/{workflowId}/lane/update",
+        "type": "SEND",
+        "authz": "canEditWorkflow",
+        "requestExample": {
+          "action": "lane_updated",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c",
+          "messageId": "msg-031",
+          "laneId": "lane_juridico",
+          "data": {
+            "id": "lane_juridico",
+            "nombre": "Juridico y cumplimiento",
+            "orden": 2
+          }
+        },
+        "successfulResponse": {
+          "broadcastChannel": "/topic/workflow/{workflowId}",
+          "dataType": "WorkflowChangeMessage",
+          "example": {
+            "action": "lane_updated",
+            "laneId": "lane_juridico",
+            "data": {
+              "id": "lane_juridico",
+              "nombre": "Juridico y cumplimiento",
+              "orden": 2
+            }
+          }
+        }
+      },
+      {
+        "id": "ws_delete_lane",
+        "destination": "/app/workflow/{workflowId}/lane/delete",
+        "type": "SEND",
+        "authz": "canEditWorkflow",
+        "requestExample": {
+          "action": "lane_deleted",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c",
+          "messageId": "msg-032",
+          "laneId": "lane_juridico"
+        },
+        "successfulResponse": {
+          "broadcastChannel": "/topic/workflow/{workflowId}",
+          "dataType": "WorkflowChangeMessage",
+          "example": {
+            "action": "lane_deleted",
+            "laneId": "lane_juridico",
+            "timestamp": 1776630300000
+          }
+        }
+      },
+      {
+        "id": "ws_selection",
+        "destination": "/app/workflow/{workflowId}/selection",
+        "type": "SEND",
+        "authz": "canViewWorkflow",
+        "requestExample": {
+          "action": "selection_updated",
+          "workflowId": "65f1a2b3c4d5e6f7890a3002",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c",
+          "userName": "Ana Perez",
+          "nodeId": "n_revision",
+          "timestamp": 1776630350000
+        },
+        "successfulResponse": {
+          "broadcastChannel": "/topic/workflow/{workflowId}/selections",
+          "dataType": "WorkflowChangeMessage",
+          "example": {
+            "action": "selection_updated",
+            "userId": "65f1a2b3c4d5e6f7890a1b2c",
+            "userName": "Ana Perez",
+            "nodeId": "n_revision",
+            "timestamp": 1776630350000
+          }
+        }
+      },
+      {
+        "id": "ws_get_state",
+        "destination": "/app/workflow/{workflowId}/state",
+        "type": "SEND",
+        "authz": "canViewWorkflow",
+        "requestExample": {
+          "action": "get_state",
+          "workflowId": "65f1a2b3c4d5e6f7890a3002",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c"
+        },
+        "successfulResponse": {
+          "userQueue": "/user/queue/editing-state",
+          "dataType": "WorkflowEditingState",
+          "example": {
+            "workflowId": "65f1a2b3c4d5e6f7890a3002",
+            "editedBy": "65f1a2b3c4d5e6f7890a1b2c",
+            "editedByName": "Ana Perez",
+            "lockedAt": 1776630000000,
+            "lastModified": 1776630360000,
+            "activeEditors": [],
+            "lanes": [],
+            "nodes": [],
+            "edges": [],
+            "pendingChanges": []
+          }
+        }
+      },
+      {
+        "id": "ws_get_history",
+        "destination": "/app/workflow/{workflowId}/history",
+        "type": "SEND",
+        "authz": "canViewWorkflow",
+        "requestExample": {
+          "action": "get_history",
+          "workflowId": "65f1a2b3c4d5e6f7890a3002",
+          "userId": "65f1a2b3c4d5e6f7890a1b2c"
+        },
+        "successfulResponse": {
+          "userQueue": "/user/queue/change-history",
+          "dataType": "WorkflowChangeMessage[]",
+          "example": [
+            {
+              "action": "node_added",
+              "workflowId": "65f1a2b3c4d5e6f7890a3002",
+              "userId": "65f1a2b3c4d5e6f7890a1b2c",
+              "userName": "Ana Perez",
+              "nodeId": "n_revision",
+              "timestamp": 1776630100000,
+              "status": "success",
+              "messageId": "msg-010"
+            }
+          ]
+        }
+      }
+    ],
+    "subscribeChannels": [
+      {
+        "channel": "/topic/workflow/{workflowId}",
+        "type": "broadcast",
+        "payloadType": "WorkflowChangeMessage"
+      },
+      {
+        "channel": "/topic/workflow/{workflowId}/selections",
+        "type": "broadcast",
+        "payloadType": "WorkflowChangeMessage"
+      },
+      {
+        "channel": "/user/queue/editing-state",
+        "type": "unicast",
+        "payloadType": "WorkflowEditingState"
+      },
+      {
+        "channel": "/user/queue/change-history",
+        "type": "unicast",
+        "payloadType": "WorkflowChangeMessage[]"
+      }
+    ],
+    "errorEvents": {
+      "channel": "/topic/workflow/{workflowId}",
+      "dataType": "WorkflowChangeMessage",
+      "example": {
+        "action": "error",
+        "workflowId": "65f1a2b3c4d5e6f7890a3002",
+        "status": "error",
+        "message": "No tienes permiso para editar este workflow",
+        "timestamp": 1776630400000
+      }
+    }
+  }
+}
