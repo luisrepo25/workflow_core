@@ -73,7 +73,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/departments").permitAll()
                 
                 // ✅ WebSocket ahora REQUIERE autenticación
-                .requestMatchers("/ws/**").authenticated()
+                .requestMatchers("/ws/**").permitAll()
                 
                 // ✅ Todo lo demás requiere autenticación
                 .anyRequest().authenticated())
