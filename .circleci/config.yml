@@ -4,6 +4,10 @@ jobs:
   test-java:
     docker:
       - image: cimg/openjdk:21.0
+        environment:
+          MONGODB_URI: mongodb://localhost:27017/workflow_test
+          MONGODB_DB: workflow_test
+      - image: mongo:7.0
     steps:
       - checkout
       - run:
