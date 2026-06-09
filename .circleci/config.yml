@@ -1,10 +1,9 @@
-# This config was automatically generated from your source code
-# Stacks detected: deps:java:.
 version: 2.1
+
 jobs:
   test-java:
     docker:
-      - image: cimg/openjdk:17.0
+      - image: cimg/openjdk:21.0
     steps:
       - checkout
       - run:
@@ -15,6 +14,7 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum "/tmp/CIRCLECI_CACHE_KEY" }}
       - run:
+          name: Build and test
           command: mvn verify
       - store_test_results:
           path: target/surefire-reports
@@ -22,19 +22,31 @@ jobs:
           key: cache-{{ checksum "/tmp/CIRCLECI_CACHE_KEY" }}
           paths:
             - ~/.m2/repository
+
   deploy:
-    # This is an example deploy job, not actually used by the workflow
     docker:
       - image: cimg/base:stable
     steps:
-      # Replace this with steps to deploy to users
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:cJ1W+1/OBU6rnqDS0vp3SCQz2Z1APBroMXuEFRCNlCk"
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+          name: Pull and rebuild on EC2
+          no_output_timeout: 10m
+          command: |
+            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} \
+              "cd ${EC2_PATH} && \
+               git pull origin main && \
+               docker compose down && \
+               docker compose up -d --build"
+
 workflows:
-  build-and-test:
+  build-and-deploy:
     jobs:
       - test-java
-    # - deploy:
-    #     requires:
-    #       - test-java
+      - deploy:
+          requires:
+            - test-java
+          filters:
+            branches:
+              only: main
