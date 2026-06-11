@@ -13,8 +13,7 @@ import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
+import com.workflow.demo.workflowdesign.config.S3Properties;
 import com.workflow.demo.domain.embedded.FormField;
 import com.workflow.demo.domain.embedded.WorkflowNode;
 import com.workflow.demo.domain.embedded.WorkflowSnapshot;
@@ -31,7 +30,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ActivityFileUploadService {
 
-    private final Cloudinary cloudinary;
+    private final S3StorageService s3StorageService;
+    private final S3Properties s3Properties;
     private final StoredFileRepository storedFileRepository;
     private final WorkflowRepository workflowRepository;
 
@@ -81,7 +81,7 @@ public class ActivityFileUploadService {
             Map<String, Object> fileValue = uploadAndPersist(
                 file,
                 actorId,
-                instance.getId(),
+                instance,
                 nodeId,
                 actividadId
             );
@@ -127,35 +127,34 @@ public class ActivityFileUploadService {
     private Map<String, Object> uploadAndPersist(
         MultipartFile file,
         ObjectId actorId,
-        ObjectId processInstanceId,
+        ProcessInstance instance,
         String nodeId,
         String actividadId
     ) {
         try {
-            String folder = String.format(
-                "workflow/process_%s/activity_%s",
-                processInstanceId.toHexString(),
-                actividadId
+            ObjectId processInstanceId = instance.getId();
+            ObjectId clienteId = instance.getClienteId();
+            
+            long timestamp = Instant.now().toEpochMilli();
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null) {
+                originalFilename = "file_" + timestamp;
+            }
+            
+            String s3Key = String.format("clientes/%s/tramites/%s/%s/%d_%s",
+                    clienteId != null ? clienteId.toHexString() : "unknown",
+                    processInstanceId.toHexString(),
+                    nodeId,
+                    timestamp,
+                    originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_")
             );
 
-            Map<?, ?> uploadResult = cloudinary.uploader().upload(
-                file.getBytes(),
-                ObjectUtils.asMap(
-                    "folder", folder,
-                    "resource_type", "auto",
-                    "use_filename", true,
-                    "unique_filename", true,
-                    "overwrite", false
-                )
-            );
-
-            String secureUrl = asString(uploadResult.get("secure_url"));
-            String publicId = asString(uploadResult.get("public_id"));
+            String secureUrl = s3StorageService.uploadFile(file, s3Key);
             Instant now = Instant.now();
 
             StoredFile storedFile = new StoredFile();
-            storedFile.setNombreOriginal(file.getOriginalFilename());
-            storedFile.setStoragePath(publicId);
+            storedFile.setNombreOriginal(originalFilename);
+            storedFile.setStoragePath(s3Key);
             storedFile.setUrl(secureUrl);
             storedFile.setMimeType(file.getContentType());
             storedFile.setSizeBytes(file.getSize());
@@ -163,21 +162,26 @@ public class ActivityFileUploadService {
             storedFile.setProcessInstanceId(processInstanceId);
             storedFile.setNodeId(nodeId);
             storedFile.setCreatedAt(now);
+            
+            // Campos S3
+            storedFile.setS3Key(s3Key);
+            storedFile.setS3Bucket(s3Properties.getS3().getBucket());
+            storedFile.setClienteId(clienteId);
 
             StoredFile saved = storedFileRepository.save(storedFile);
 
             Map<String, Object> fileValue = new HashMap<>();
             fileValue.put("fileId", saved.getId().toHexString());
             fileValue.put("url", secureUrl);
-            fileValue.put("publicId", publicId);
-            fileValue.put("nombre", file.getOriginalFilename());
+            fileValue.put("publicId", s3Key);
+            fileValue.put("nombre", originalFilename);
             fileValue.put("mimeType", file.getContentType());
             fileValue.put("sizeBytes", file.getSize());
-            fileValue.put("provider", "cloudinary");
+            fileValue.put("provider", "s3");
             fileValue.put("uploadedAt", now.toString());
             return fileValue;
         } catch (IOException ex) {
-            throw new IllegalArgumentException("No se pudo subir el archivo a Cloudinary", ex);
+            throw new IllegalArgumentException("No se pudo subir el archivo a S3", ex);
         }
     }
 

@@ -1,0 +1,1126 @@
+{
+  "info": {
+    "name": "Workflow Engine API",
+    "description": "Colección completa de endpoints del sistema de gestión de workflows. Spring Boot + MongoDB.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "workflow-demo",
+    "_exporter_name": "Workflow Engine"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "workflowId",
+      "value": "65f1a2b3c4d5e6f7890a3001",
+      "type": "string"
+    },
+    {
+      "key": "processInstanceId",
+      "value": "65f1a2b3c4d5e6f7890a5001",
+      "type": "string"
+    },
+    {
+      "key": "actividadId",
+      "value": "act-001",
+      "type": "string"
+    },
+    {
+      "key": "collaboratorId",
+      "value": "65f1a2b3c4d5e6f7890a4001",
+      "type": "string"
+    },
+    {
+      "key": "notificationId",
+      "value": "65f1a2b3c4d5e6f7890a1c10",
+      "type": "string"
+    },
+    {
+      "key": "decisionNodeId",
+      "value": "n_decision_1",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "🔐 Autenticación",
+      "description": "Endpoints públicos y protegidos de autenticación",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana@example.com\",\n  \"password\": \"SecurePass123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Autentica usuario y devuelve accessToken/refreshToken junto a perfil."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                  "}",
+                  "if (jsonData.refreshToken) {",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Carlos Lopez\",\n  \"email\": \"carlos@example.com\",\n  \"password\": \"SecurePass123\",\n  \"telefono\": \"+593999000111\",\n  \"departmentId\": \"65f1a2b3c4d5e6f7890a1b2d\",\n  \"role\": \"Disenador\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Registra un nuevo usuario en el sistema."
+          }
+        },
+        {
+          "name": "Refrescar Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh"]
+            },
+            "description": "Renueva access token usando refresh token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                  "}",
+                  "if (jsonData.refreshToken) {",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cambiar Contraseña",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"OldPass123\",\n  \"newPassword\": \"NewSecurePass456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "change-password"]
+            },
+            "description": "Cambia la contraseña del usuario autenticado."
+          }
+        },
+        {
+          "name": "Cerrar Sesión",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Cierra la sesión del usuario autenticado."
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 Usuarios",
+      "description": "Gestión de usuarios",
+      "item": [
+        {
+          "name": "Listar Usuarios",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users?role=&activo=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"],
+              "query": [
+                { "key": "role", "value": "", "description": "Filtrar por rol (opcional)" },
+                { "key": "activo", "value": "", "description": "Filtrar por estado activo (opcional)" }
+              ]
+            },
+            "description": "Lista todos los usuarios. Opcionalmente filtra por rol y estado activo."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏢 Departamentos",
+      "description": "Gestión de departamentos (públicos)",
+      "item": [
+        {
+          "name": "Listar Departamentos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/departments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "departments"]
+            },
+            "description": "Lista todos los departamentos activos. Endpoint público."
+          }
+        },
+        {
+          "name": "Crear Departamento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juridico\",\n  \"descripcion\": \"Revision legal\",\n  \"activo\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/departments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "departments"]
+            },
+            "description": "Crea un nuevo departamento. Endpoint público."
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Dashboard",
+      "description": "Métricas y estadísticas del dashboard",
+      "item": [
+        {
+          "name": "Obtener Métricas",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/metrics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "metrics"]
+            },
+            "description": "Obtiene métricas globales del dashboard. Roles: ADMIN, FUNCIONARIO, DESIGNER."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔔 Notificaciones",
+      "description": "Gestión de notificaciones del usuario",
+      "item": [
+        {
+          "name": "Listar Notificaciones",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            },
+            "description": "Obtiene todas las notificaciones del usuario autenticado."
+          }
+        },
+        {
+          "name": "Notificaciones Sin Leer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/unread",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "unread"]
+            },
+            "description": "Obtiene solo las notificaciones sin leer."
+          }
+        },
+        {
+          "name": "Conteo No Leídas",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/unread-count",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "unread-count"]
+            },
+            "description": "Obtiene el conteo de notificaciones sin leer."
+          }
+        },
+        {
+          "name": "Marcar Como Leída",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/{{notificationId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "{{notificationId}}", "read"]
+            },
+            "description": "Marca una notificación específica como leída."
+          }
+        },
+        {
+          "name": "Marcar Todas Como Leídas",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/read-all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "read-all"]
+            },
+            "description": "Marca todas las notificaciones del usuario como leídas."
+          }
+        },
+        {
+          "name": "Eliminar Notificación",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/{{notificationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "{{notificationId}}"]
+            },
+            "description": "Elimina una notificación específica."
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚙️ Workflows",
+      "description": "Diseño y gestión de workflows",
+      "item": [
+        {
+          "name": "Listar Workflows",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows?estado=&nombre=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows"],
+              "query": [
+                { "key": "estado", "value": "", "description": "Filtrar por estado (opcional)" },
+                { "key": "nombre", "value": "", "description": "Filtrar por nombre (opcional)" }
+              ]
+            },
+            "description": "Lista todos los workflows con filtros opcionales."
+          }
+        },
+        {
+          "name": "Workflows Activos para Trámites",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/active-for-processes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "active-for-processes"]
+            },
+            "description": "Lista workflows activos para crear trámites. Roles: FUNCIONARIO, ADMIN."
+          }
+        },
+        {
+          "name": "Obtener Workflow por ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}"]
+            },
+            "description": "Obtiene el detalle completo de un workflow incluyendo lanes, nodos y edges."
+          }
+        },
+        {
+          "name": "Crear Workflow",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"WF-TRAM-002\",\n  \"nombre\": \"Licencias\",\n  \"descripcion\": \"Flujo de licencias\",\n  \"estado\": \"borrador\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows"]
+            },
+            "description": "Crea un nuevo workflow en estado borrador."
+          }
+        },
+        {
+          "name": "Actualizar Metadata del Workflow",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Licencias v2\",\n  \"descripcion\": \"Actualización de metadata\",\n  \"estado\": \"activo\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}"]
+            },
+            "description": "Actualiza nombre, descripción o estado de un workflow."
+          }
+        },
+        {
+          "name": "Guardar Diseño del Workflow",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lanes\": [\n    {\n      \"id\": \"lane_finanzas\",\n      \"nombre\": \"Finanzas\",\n      \"descripcion\": \"Revisión financiera\",\n      \"responsable\": \"ROLE_FUNCIONARIO\",\n      \"color\": \"#3A86FF\",\n      \"departmentId\": \"65f1a2b3c4d5e6f7890a2a01\",\n      \"orden\": 1\n    }\n  ],\n  \"nodes\": [\n    {\n      \"id\": \"n_inicio\",\n      \"tipo\": \"inicio\",\n      \"nombre\": \"Inicio\",\n      \"descripcion\": \"Entrada del flujo\",\n      \"laneId\": \"lane_finanzas\",\n      \"departmentId\": \"65f1a2b3c4d5e6f7890a2a01\",\n      \"responsableTipo\": \"departamento\",\n      \"responsableUsuarioId\": null,\n      \"responsableRole\": \"Funcionario\",\n      \"slaMinutos\": 60,\n      \"permiteAdjuntos\": false,\n      \"form\": null,\n      \"reglasSalida\": [],\n      \"posicionX\": 150.5,\n      \"posicionY\": 120.0\n    }\n  ],\n  \"edges\": [\n    {\n      \"fromNodeId\": \"n_inicio\",\n      \"toNodeId\": \"n_fin\",\n      \"tipo\": \"secuencial\",\n      \"label\": \"continua\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/design",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "design"]
+            },
+            "description": "Guarda el diseño completo del workflow: lanes, nodos y edges."
+          }
+        },
+        {
+          "name": "Validar Workflow",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "validate"]
+            },
+            "description": "Valida la estructura del workflow. Retorna errores y advertencias."
+          }
+        },
+        {
+          "name": "Activar Workflow",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "activate"]
+            },
+            "description": "Activa un workflow para que pueda ser usado en trámites."
+          }
+        },
+        {
+          "name": "Desactivar Workflow",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/deactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "deactivate"]
+            },
+            "description": "Desactiva un workflow."
+          }
+        },
+        {
+          "name": "Eliminar Workflow (Lógico)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}"]
+            },
+            "description": "Eliminación lógica del workflow (lo marca como inactivo)."
+          }
+        },
+        {
+          "name": "Tomar Lock del Workflow",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"65f1a2b3c4d5e6f7890a1b2c\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/lock",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "lock"]
+            },
+            "description": "Bloquea el workflow para edición exclusiva."
+          }
+        },
+        {
+          "name": "Liberar Lock del Workflow",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/lock?userId=65f1a2b3c4d5e6f7890a1b2c",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "lock"],
+              "query": [
+                { "key": "userId", "value": "65f1a2b3c4d5e6f7890a1b2c" }
+              ]
+            },
+            "description": "Libera el lock de edición del workflow."
+          }
+        },
+        {
+          "name": "Estado del Lock",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/lock",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "lock"]
+            },
+            "description": "Obtiene el estado actual del lock del workflow."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔀 Reglas de Decisión",
+      "description": "Gestión de reglas de decisión en nodos de tipo decisión",
+      "item": [
+        {
+          "name": "Obtener Contexto de Decisión",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/decision-context/{{decisionNodeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "decision-context", "{{decisionNodeId}}"]
+            },
+            "description": "Obtiene el contexto de decisión: campos disponibles, operadores por tipo."
+          }
+        },
+        {
+          "name": "Patch Reglas de Decisión",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"binary\",\n  \"decisionRule\": {\n    \"field\": \"monto\",\n    \"operator\": \"GREATER_THAN\",\n    \"value\": \"1000\",\n    \"onTrueDestinoNodeId\": \"n_aprobado\",\n    \"onFalseDestinoNodeId\": \"n_rechazado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/nodes/{{decisionNodeId}}/decision-rules",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "nodes", "{{decisionNodeId}}", "decision-rules"]
+            },
+            "description": "Actualiza las reglas de decisión de un nodo."
+          }
+        },
+        {
+          "name": "Validar Reglas de Decisión",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"binary\",\n  \"decisionRule\": {\n    \"field\": \"monto\",\n    \"operator\": \"GREATER_THAN\",\n    \"value\": \"1000\",\n    \"onTrueDestinoNodeId\": \"n_aprobado\",\n    \"onFalseDestinoNodeId\": \"n_rechazado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/nodes/{{decisionNodeId}}/decision-rules/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "nodes", "{{decisionNodeId}}", "decision-rules", "validate"]
+            },
+            "description": "Valida las reglas de decisión sin guardarlas."
+          }
+        },
+        {
+          "name": "Simular Reglas de Decisión",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"binary\",\n  \"input\": {\n    \"aprobado\": true,\n    \"monto\": 1200\n  },\n  \"decisionRule\": {\n    \"field\": \"monto\",\n    \"operator\": \"GREATER_THAN\",\n    \"value\": \"1000\",\n    \"onTrueDestinoNodeId\": \"n_aprobado\",\n    \"onFalseDestinoNodeId\": \"n_rechazado\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/nodes/{{decisionNodeId}}/decision-rules/simulate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "nodes", "{{decisionNodeId}}", "decision-rules", "simulate"]
+            },
+            "description": "Simula la evaluación de reglas de decisión con datos de entrada."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🤝 Colaboradores",
+      "description": "Gestión de colaboradores en workflows",
+      "item": [
+        {
+          "name": "Invitar Colaborador",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"colaborador@example.com\",\n  \"role\": \"DESIGNER\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/collaborators",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "collaborators"]
+            },
+            "description": "Invita un usuario a ser colaborador del workflow. Rol requerido: DESIGNER (propietario)."
+          }
+        },
+        {
+          "name": "Listar Colaboradores",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/collaborators",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "collaborators"]
+            },
+            "description": "Lista todos los colaboradores del workflow."
+          }
+        },
+        {
+          "name": "Aceptar Invitación",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/collaborators/{{collaboratorId}}/accept",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "collaborators", "{{collaboratorId}}", "accept"]
+            },
+            "description": "Acepta una invitación de colaboración."
+          }
+        },
+        {
+          "name": "Rechazar Invitación",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/collaborators/{{collaboratorId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "collaborators", "{{collaboratorId}}", "reject"]
+            },
+            "description": "Rechaza una invitación de colaboración."
+          }
+        },
+        {
+          "name": "Remover Colaborador",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/collaborators/{{collaboratorId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "collaborators", "{{collaboratorId}}"]
+            },
+            "description": "Remueve un colaborador del workflow. Solo propietario."
+          }
+        },
+        {
+          "name": "Cambiar Rol de Colaborador",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"VIEWER\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workflows/{{workflowId}}/collaborators/{{collaboratorId}}/role",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workflows", "{{workflowId}}", "collaborators", "{{collaboratorId}}", "role"]
+            },
+            "description": "Cambia el rol de un colaborador. Solo propietario."
+          }
+        },
+        {
+          "name": "Invitaciones Pendientes",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/collaborations/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "collaborations", "pending"]
+            },
+            "description": "Lista las invitaciones pendientes del usuario autenticado."
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Trámites (Process Instances)",
+      "description": "Gestión de instancias de proceso (trámites)",
+      "item": [
+        {
+          "name": "Crear Trámite",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workflowId\": \"{{workflowId}}\",\n  \"clienteId\": \"65f1a2b3c4d5e6f7890a1b90\",\n  \"datosIniciales\": {\n    \"numeroSolicitud\": \"SOL-2026-0001\",\n    \"monto\": 1200.5\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/process-instances",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "process-instances"]
+            },
+            "description": "Crea una nueva instancia de proceso (trámite). Roles: FUNCIONARIO, DESIGNER, CLIENT, ADMIN."
+          }
+        },
+        {
+          "name": "Mis Trámites",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/process-instances",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "process-instances"]
+            },
+            "description": "Obtiene las instancias de proceso del usuario autenticado. Roles: CLIENT, FUNCIONARIO, ADMIN."
+          }
+        },
+        {
+          "name": "Todos los Trámites",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/process-instances/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "process-instances", "all"]
+            },
+            "description": "Lista todos los trámites con información completa. Roles: FUNCIONARIO, DESIGNER, ADMIN."
+          }
+        },
+        {
+          "name": "Detalle de Trámite",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/process-instances/{{processInstanceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "process-instances", "{{processInstanceId}}"]
+            },
+            "description": "Obtiene el detalle completo de un trámite. Incluye workflowSnapshot."
+          }
+        },
+        {
+          "name": "Historial de Trámite",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/process-instances/{{processInstanceId}}/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "process-instances", "{{processInstanceId}}", "history"]
+            },
+            "description": "Obtiene el historial de eventos de un trámite."
+          }
+        },
+        {
+          "name": "Actividades Pendientes",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/process-instances/activities/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "process-instances", "activities", "pending"]
+            },
+            "description": "Obtiene actividades pendientes para el funcionario autenticado. Roles: FUNCIONARIO, ADMIN."
+          }
+        },
+        {
+          "name": "Completar Actividad (JSON)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"respuestaFormulario\": {\n    \"aprobado\": true,\n    \"comentario\": \"Cumple requisitos\"\n  },\n  \"comentarios\": \"Revisión completada\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/process-instances/activities/{{actividadId}}/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "process-instances", "activities", "{{actividadId}}", "complete"]
+            },
+            "description": "Completa una actividad con respuesta JSON. Roles: FUNCIONARIO, ADMIN."
+          }
+        },
+        {
+          "name": "Completar Actividad (Multipart)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "payload",
+                  "value": "{\"respuestaFormulario\":{\"aprobado\":true,\"comentario\":\"Cumple requisitos\",\"comprobantePago\":null},\"comentarios\":\"Revisión completada\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "value": "",
+                  "type": "file",
+                  "description": "Archivo adjunto (opcional)"
+                },
+                {
+                  "key": "fileFieldIds",
+                  "value": "comprobantePago",
+                  "type": "text",
+                  "description": "IDs de campos de archivo (mismo orden que files)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/process-instances/activities/{{actividadId}}/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "process-instances", "activities", "{{actividadId}}", "complete"]
+            },
+            "description": "Completa una actividad con archivos adjuntos (multipart/form-data). Roles: FUNCIONARIO, ADMIN."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔌 WebSocket (STOMP)",
+      "description": "Endpoints WebSocket para edición colaborativa en tiempo real",
+      "item": [
+        {
+          "name": "Conectar a Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"connect\",\n  \"workflowId\": \"{{workflowId}}\",\n  \"userId\": \"65f1a2b3c4d5e6f7890a1b2c\",\n  \"userName\": \"Ana Perez\"\n}"
+            },
+            "url": {
+              "raw": "ws://localhost:8080/ws/workflow",
+              "host": ["ws://localhost:8080"],
+              "path": ["ws", "workflow"]
+            },
+            "description": "STOMP: /app/workflow/{workflowId}/connect - Registra editor activo y notifica a otros."
+          }
+        },
+        {
+          "name": "Desconectar de Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"disconnect\",\n  \"workflowId\": \"{{workflowId}}\",\n  \"userId\": \"65f1a2b3c4d5e6f7890a1b2c\",\n  \"userName\": \"Ana Perez\"\n}"
+            },
+            "url": {
+              "raw": "ws://localhost:8080/ws/workflow",
+              "host": ["ws://localhost:8080"],
+              "path": ["ws", "workflow"]
+            },
+            "description": "STOMP: /app/workflow/{workflowId}/disconnect - Desconecta editor y notifica."
+          }
+        },
+        {
+          "name": "Suscribir a Cambios (topic)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "ws://localhost:8080/topic/workflow/{{workflowId}}",
+              "host": ["ws://localhost:8080"],
+              "path": ["topic", "workflow", "{{workflowId}}"]
+            },
+            "description": "STOMP subscribe: /topic/workflow/{workflowId} - Recibe broadcasts de cambios en tiempo real."
+          }
+        },
+        {
+          "name": "Suscribir a Estado de Edición (user queue)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "ws://localhost:8080/user/queue/editing-state",
+              "host": ["ws://localhost:8080"],
+              "path": ["user", "queue", "editing-state"]
+            },
+            "description": "STOMP subscribe: /user/queue/editing-state - Recibe estado de edición actual al conectarse."
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Auto-refresh token if expired (optional)"
+        ]
+      }
+    }
+  ]
+}

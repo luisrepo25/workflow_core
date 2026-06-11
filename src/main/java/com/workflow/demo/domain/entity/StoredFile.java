@@ -22,6 +22,12 @@ public class StoredFile {
     private String mimeType;
     private Long sizeBytes;
 
+    private String s3Key;
+    private String s3Bucket;
+
+    @Indexed
+    private ObjectId clienteId;
+
     @Indexed
     private ObjectId subidoPor;
 
